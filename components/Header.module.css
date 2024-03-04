@@ -1,0 +1,60 @@
+/* components/Header.module.css */
+
+.header {
+    height: 80px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 5rem;
+}
+
+.logo {
+    height: 80px;
+    width: auto;
+    display: flex;
+    align-items: center;
+}
+
+.logo h1 {
+    letter-spacing: .3px;
+}
+
+.logo img {
+    height: 100%;
+    width: 100%;
+}
+
+.navbar ul {
+    list-style: none;
+    display: flex;
+    gap: 50px;
+}
+
+.navbar ul li {
+    /* margin-right: 20px; */
+}
+
+.navbar ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 17px;
+    font-weight: 500;
+}
+
+.navbar ul li a:hover {
+    text-decoration: underline;
+    transition: all ease-in-out .2s;
+    text-underline-offset: 5px;
+    color: #893168;
+}
+
+@media (max-width:768px) {
+    .header {
+        justify-content: center;
+    }
+
+    .navbar {
+        display: none;
+    }
+}

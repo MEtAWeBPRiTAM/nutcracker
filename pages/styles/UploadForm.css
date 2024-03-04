@@ -1,0 +1,45 @@
+/* UploadForm.css */
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: gilroy;
+}
+body{
+    position: relative;
+    /* overflow: hidden; */
+}
+.upload-form-container {
+    margin: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.error-message {
+    color: red;
+    margin-top: 10px;
+}
+
+.success-message {
+    color: green;
+    margin-top: 10px;
+}
+
+/* input[type="file"] {
+    margin-bottom: 10px;
+} */
+
+button.Ubtn {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button.Ubtn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
