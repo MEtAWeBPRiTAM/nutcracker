@@ -1,12 +1,17 @@
+# Latest Script Update: 2021-07-20
 import os
 from dotenv import load_dotenv
 import re
+import asyncio
+import uvloop
+from tgcrypto import AES, RSA, AuthKey
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 import pymongo
 from pymongo import MongoClient
 import datetime
-import asyncio
+
+asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 load_dotenv()
 
@@ -28,7 +33,6 @@ def get_user_record(user_id):
     userInformation = userCollection.find_one({'userId': user_id})
     print(userInformation)
     return userInformation
-    # pass
 
 def insert_user_record(user_id, userName):
     userCollection.insert_one({'userId': user_id, 'userName': userName, 'upiNumber': 0, 'uploadedVideos': 0,
@@ -59,7 +63,6 @@ async def getAccountInfo(bot, message):
 
 @app.on_message(filters.command("availablebots"))
 async def availableBots(bot, message):
-    # Create a list of bot names and their corresponding URLs
     bot_list = [
         ('''              NutCracker Link Convert Bot             ''', "https://t.me/NutCracker_Link_Convert_Bot"),
         ('''              nutcracker video convert bot.           ''', "https://t.me/nutcracker_video_convert_bot")
@@ -70,14 +73,13 @@ async def availableBots(bot, message):
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await bot.send_message(message.chat.id, f'''        Abailable Bots: 👇👇         ''', reply_markup=reply_markup)
+    await bot.send_message(message.chat.id, f'''        Available Bots: 👇👇         ''', reply_markup=reply_markup)
 
 @app.on_message(filters.command("uploadfromdevice"))
 async def uploadFromDevice(bot, message):
     await bot.send_message(message.chat.id, f'''Start Uploading Your Video ...😉''')
 
 @app.on_message(filters.text)
-
 async def handleMessage(bot, message):
     user_id = message.from_user.id
     sender_username = message.from_user.username
@@ -96,34 +98,33 @@ async def handleMessage(bot, message):
 async def handle_video(bot, message: Message):
     messageInit = await message.reply('Processing request...')
     try:
-       user_id = message.from_user.id
-       file_id = message.video.file_id
-       video_path = await bot.download_media(file_id, file_name='../public/uploads/')
-       video_file = open(video_path, 'rb')
-       fileName = os.path.basename(video_path)
-       try:
-        video_info = {
-           'videoName': fileName,
-           'fileLocalPath': f"/public/uploads/{fileName}",
-           'file_size': message.video.file_size,
-           'duration': message.video.duration,
-           'mime_type': message.video.mime_type,
-           'fileUniqueId': message.video.file_unique_id,
-           'relatedUser:': user_id,
-           'userName': message.from_user.username or ''
-         }
-        videoCollection.insert_one(video_info)
-       except Exception as e:
+        user_id = message.from_user.id
+        file_id = message.video.file_id
+        video_path = await bot.download_media(file_id, file_name='../public/uploads/')
+        video_file = open(video_path, 'rb')
+        fileName = os.path.basename(video_path)
+        try:
+            video_info = {
+                'videoName': fileName,
+                'fileLocalPath': f"/public/uploads/{fileName}",
+                'file_size': message.video.file_size,
+                'duration': message.video.duration,
+                'mime_type': message.video.mime_type,
+                'fileUniqueId': message.video.file_unique_id,
+                'relatedUser:': user_id,
+                'userName': message.from_user.username or ''
+            }
+            videoCollection.insert_one(video_info)
+        except Exception as e:
             print(e)
-            return 
-       client.close()
-       videoUrl = f'http://nutcracker.live/public/uploads/{message.video.file_unique_id}'
-       await message.reply(f'''Your video has been uploaded successfully... \n\n😊😊Now you can start using the link:\n\n{videoUrl}''')
-       await messageInit.delete()        
+            return
+        videoUrl = f'http://nutcracker.live/public/uploads/{message.video.file_unique_id}'
+        await message.reply(f'''Your video has been uploaded successfully... \n\n😊😊Now you can start using the link:\n\n{videoUrl}''')
+        await messageInit.delete()
     except Exception as e:
-     print(e)
-     await messageInit.edit(f"An error occured while processing your request. Please try again later.")
-     return
+        print(e)
+        await messageInit.edit(f"An error occured while processing your request. Please try again later.")
+        return
 
 @app.on_message(filters.photo)
 async def handleImage(bot, message):
@@ -150,19 +151,12 @@ async def handleImage(bot, message):
 
                                           ''', reply_to_message_id=message.message_id)
 
-
-# Insert user record into database
-
 async def process_video_link(video_link: str, user_id: int, sender_username: str) -> str:
-    # Download the video
     video_path = await app.download_media(video_link)
-    
-    # Get video metadata
     video_meta = await app.get_media_info(video_path)
     fileName = os.path.basename(video_path)
-    # Insert video info into MongoDB
     video_info = {
-        'videoName': fileName ,
+        'videoName': fileName,
         'fileLocalPath': f"/public/uploads/{fileName}",
         'file_size': video_meta.file_size,
         'duration': video_meta.duration,
@@ -172,8 +166,6 @@ async def process_video_link(video_link: str, user_id: int, sender_username: str
         'userName': sender_username or ''
     }
     videoCollection.insert_one(video_info)
-
-    # Construct video URL
     videoUrl = f'http://nutcracker.live/public/uploads/{video_meta.file_unique_id}'
     return videoUrl
 
