@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import re
 import asyncio
 import uvloop
-from tgcrypto import AES, RSA, AuthKey
+from TgCrypto.Cipher import AES  # Correct import statement
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 import pymongo
