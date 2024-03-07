@@ -28,14 +28,28 @@ export default async function handler(req, res) {
 
         const files = req.files;
         const videoUrls = [];
-
+        function generateRandomHex(length) {
+          const characters = 'abcdef0123456789';
+          let randomHex = '';
+      
+          for (let i = 0; i < length; i++) {
+              const randomIndex = Math.floor(Math.random() * characters.length);
+              randomHex += characters.charAt(randomIndex);
+          }
+      
+          return randomHex;
+      }
+      
+      // Generate a random hexadecimal string with 24 characters
+      const randomHex = generateRandomHex(24);
+      console.log(randomHex);
         for (const file of files) {
           const { filename } = file;
-          const videoId = uuidv4();
+          const videoId = randomHex;
 
           const db = client.db("nutCracker");
           const videoCollections = db.collection("videosRecord");
-          const pathLc = `/public/uploads/${filename}`;
+          const pathLc = `/public/uploads/${videoId}`;
           const videoTemplate = {
             fileUniqueId: videoId,
             videoName: filename,
@@ -44,7 +58,7 @@ export default async function handler(req, res) {
           };
 
           await videoCollections.insertOne(videoTemplate);
-          const videoUrl = `http://nutcracker.live/public/uploads/${videoId}`;
+          const videoUrl = `http://nutcracker.live/video/${videoId}`;
           videoUrls.push(videoUrl);
         }
 
