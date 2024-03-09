@@ -30,12 +30,12 @@ function VideoPlayer({ videoId }) {
     const videoUrl = `/uploads/${videoDetails.videoName}`;
 
     return (
-        <div style={styles.maincontainers}>
-            <div style={styles.container}>
-                <div style={styles.videocontainer}>
+        <div>
+            <div className={styles.container}>
+                <div className={styles.videocontainer}>
                     <ReactPlayer url={videoUrl} controls={true} width="100%" height="100%" />
                 </div>
-                <div style={styles.videotitle}>
+                <div className={styles.videotitle}>
                     <h2>{videoDetails.videoName}</h2>
                 </div>
             </div>

@@ -7,11 +7,11 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       const { videoId } = req.query;
-      console.log('Received videoId:', videoId); // Add this line to log the received videoId
+      // console.log('Received videoId:', videoId); 
 
       // Attempt to create an ObjectId from the videoId string
       // const fileUniqueId = new ObjectId(videoId);
-      // console.log('Created objectId:', objectId); // Add this line to log the created objectId
+      // console.log('Created objectId:', objectId); 
 
       const db = client.db("nutCracker");
       const collection = db.collection("videosRecord");
