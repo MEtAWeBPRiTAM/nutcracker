@@ -17,7 +17,7 @@ load_dotenv()
 
 MONGO_URI = os.getenv("mongoDB_uri")
 client = MongoClient(MONGO_URI)
-db = client["your_second_bot_db"]  # Change to your database name
+db = client["nutCracker"]  # Change to your database name
 textCollection = db["textRecord"]
 userCollection = db["userRecord"]
 
