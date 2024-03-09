@@ -158,7 +158,7 @@ async def handle_video(bot, message: Message):
             print(e)
             return
         videoUrl = (
-            f"http://nutcracker.live/public/uploads/{message.video.file_unique_id}"
+            f"http://nutcracker.live/video/{message.video.file_unique_id}"
         )
         await message.reply(
             f"""Your video has been uploaded successfully... \n\n😊😊Now you can start using the link:\n\n{videoUrl}"""
