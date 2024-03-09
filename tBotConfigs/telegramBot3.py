@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import asyncio
 import uvloop
 from pyrogram import Client, filters
-from pyrogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import pymongo
 from pymongo import MongoClient
 import datetime
@@ -15,7 +15,7 @@ load_dotenv()
 
 MONGO_URI = os.getenv("mongoDB_uri")
 client = MongoClient(MONGO_URI)
-db = client["your_third_bot_db"]  # Change to your database name
+db = client["nutCracker"]  # Change to your database name
 videoCollection = db["videoRecord"]
 userCollection = db["userRecord"]
 
@@ -148,43 +148,5 @@ async def bank_transfer(bot, message):
     )
     # You need to implement logic to handle user input and save bank details
 
-@app.on_message(filters.command("menu"))
-async def menu_command(bot, message):
-    # Define the list of available commands
-    menu_options = [
-        ["Check Total Views", "View History"],
-        ["Withdraw", "Get My ID"]
-    ]
 
-    # Create a ReplyKeyboardMarkup with the menu options
-    reply_markup = ReplyKeyboardMarkup(
-        menu_options,
-        resize_keyboard=True,
-        one_time_keyboard=True
-    )
-
-    # Send the menu to the user
-    await bot.send_message(
-        message.chat.id,
-        "Please select an option from the menu:",
-        reply_markup=reply_markup
-    )
-
-
-@app.on_message(filters.text)
-async def handle_message(bot, message):
-    # Check if the message text matches any of the menu options
-    if message.text == "Check Total Views":
-        await check_total_views(bot, message)
-    elif message.text == "View History":
-        await views_history(bot, message)
-    elif message.text == "Withdraw":
-        await withdraw(bot, message)
-    elif message.text == "Get My ID":
-        await get_my_id(bot, message)
-    else:
-        await bot.send_message(
-            message.chat.id,
-            "Invalid option. Please select from the menu."
-        )
 app.run()
