@@ -1,12 +1,10 @@
 # Latest Script Update: 2024-03-09
 import os
 from dotenv import load_dotenv
-import re
 import asyncio
 import uvloop
-from TgCrypto.Cipher import AES  # Correct import statement
 from pyrogram import Client, filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import pymongo
 from pymongo import MongoClient
 import datetime
@@ -17,16 +15,16 @@ load_dotenv()
 
 MONGO_URI = os.getenv("mongoDB_uri")
 client = MongoClient(MONGO_URI)
-db = client["nutCracker"]  
-textCollection = db["textRecord"]
+db = client["your_third_bot_db"]  # Change to your database name
+videoCollection = db["videoRecord"]
 userCollection = db["userRecord"]
 
-secondBotToken = os.getenv("bot2Token")  # Change to your second bot token
+thirdBotToken = os.getenv("bot3Token")  # Change to your third bot token
 API_ID = os.getenv("api_id")
 API_HASH = os.getenv("api_hash")
 
 # Initialize the Telegram bot
-app = Client("second_bot", api_id=API_ID, api_hash=API_HASH, bot_token=secondBotToken)
+app = Client("third_bot", api_id=API_ID, api_hash=API_HASH, bot_token=thirdBotToken)
 
 
 # Handle commands
@@ -41,8 +39,7 @@ def insert_user_record(user_id, user_name):
         {
             "userId": user_id,
             "userName": user_name,
-            "upiNumber": 0,
-            "uploadedVideos": 0,
+            "totalViews": 0,
             "createdAt": datetime.datetime.now(),
         }
     )
@@ -77,6 +74,10 @@ async def available_bots(bot, message):
             """              Your Second Bot Name             """,
             "https://t.me/bot2",
         ),
+        (
+            """              Your Third Bot Name             """,
+            "https://t.me/bot3",
+        ),
     ]
 
     keyboard = [[InlineKeyboardButton(bot[0], url=bot[1])] for bot in bot_list]
@@ -89,62 +90,63 @@ async def available_bots(bot, message):
     )
 
 
-@app.on_message(filters.command("keepthetext"))
-async def keep_the_text(bot, message):
-    # Assuming the text to keep is provided as the command argument
-    text_to_keep = message.text.split("/keepthetext ", 1)[1]
-
-    # Save the text to the database or perform any desired action
-    textCollection.insert_one({"user_id": message.from_user.id, "text": text_to_keep})
-
-    await bot.send_message(
-        message.chat.id,
-        f"""Text added successfully! You can now share a video with this text using /uploadfromdevice""",
-    )
-
-
-@app.on_message(filters.command("deletethetext"))
-async def delete_the_text(bot, message):
-    # Remove the text associated with the user from the database or perform any desired action
-    textCollection.delete_one({"user_id": message.from_user.id})
-
-    await bot.send_message(
-        message.chat.id,
-        f"""Text deleted successfully!""",
-    )
-
-
-@app.on_message(filters.command("keepthepicture"))
-async def keep_the_picture(bot, message):
-    # Assuming the picture URL to keep is provided as the command argument
-    picture_url = message.text.split("/keepthepicture ", 1)[1]
-
-    # Save the picture URL to the database or perform any desired action
-    # This could be used to set a preview image for the link
-
-    await bot.send_message(
-        message.chat.id,
-        f"""Picture added successfully!""",
-    )
-
-
-@app.on_message(filters.command("deletethepicture"))
-async def delete_the_picture(bot, message):
-    # Remove the picture associated with the user from the database or perform any desired action
-    # This could be used to remove the preview image from the link
-
-    await bot.send_message(
-        message.chat.id,
-        f"""Picture deleted successfully!""",
-    )
-
-
 @app.on_message(filters.command("getmyid"))
 async def get_my_id(bot, message):
     user_id = message.from_user.id
     await bot.send_message(
         message.chat.id, f"""Here is your 👤 user id:\n\n {user_id}"""
     )
+
+
+@app.on_message(filters.command("checktotalviews"))
+async def check_total_views(bot, message):
+    user_id = message.from_user.id
+    user_record = get_user_record(user_id)
+    total_views = user_record.get("totalViews", 0)
+    await bot.send_message(
+        message.chat.id, f"Total views for your videos: {total_views}"
+    )
+
+
+@app.on_message(filters.command("viewshistory"))
+async def views_history(bot, message):
+    user_id = message.from_user.id
+    # Retrieve last 20 uploaded videos' history from the database
+    # You need to implement the logic to fetch and display this information
+    # Example: video_history = get_last_20_videos_history(user_id)
+    video_history = "You haven't uploaded any videos yet."  # Placeholder message
+    await bot.send_message(message.chat.id, video_history)
+
+
+@app.on_message(filters.command("withdraw"))
+async def withdraw(bot, message):
+    options = [
+        ["UPI Transfer", "Bank Transfer"],
+    ]
+    reply_markup = InlineKeyboardMarkup(options)
+    await bot.send_message(
+        message.chat.id,
+        "Please select your preferred withdrawal method:",
+        reply_markup=reply_markup,
+    )
+
+
+@app.on_message(filters.command("upitransfer"))
+async def upi_transfer(bot, message):
+    await bot.send_message(
+        message.chat.id,
+        "Please enter your UPI ID:",
+    )
+    # You need to implement logic to handle user input and save UPI ID
+
+
+@app.on_message(filters.command("banktransfer"))
+async def bank_transfer(bot, message):
+    await bot.send_message(
+        message.chat.id,
+        "Please enter your bank account number:",
+    )
+    # You need to implement logic to handle user input and save bank details
 
 
 app.run()
