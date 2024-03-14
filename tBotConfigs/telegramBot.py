@@ -141,10 +141,10 @@ async def titleRename(bot, message):
         )
         return
 
-    video_id, new_title = args[1].split(maxsplit=1)
+    fileUniqueId, new_title = args[1].split(maxsplit=1)
 
     # Get the user's uploaded video from the database
-    video_info = videoCollection.find_one({"fileUniqueId": video_id})
+    video_info = videoCollection.find_one({"fileUniqueId": fileUniqueId})
     if video_info is None:
         await bot.send_message(
             message.chat.id, "No video found with the provided video ID."
@@ -153,12 +153,12 @@ async def titleRename(bot, message):
 
     # Update the title in the database
     videoCollection.update_one(
-        {"fileUniqueId": video_id}, {"$set": {"videoName": new_title}}
+        {"fileUniqueId": fileUniqueId}, {"$set": {"videoName": new_title}}
     )
 
     await bot.send_message(
         message.chat.id,
-        f"The title of the video with ID '{video_id}' has been updated to '{new_title}'.",
+        f"The title of the video with ID '{fileUniqueId}' has been updated to '{new_title}'.",
     )
 
 
