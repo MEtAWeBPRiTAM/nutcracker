@@ -226,7 +226,7 @@ async def handleImage(bot, message):
                     f"""Your video has been uploaded successfully... \n\n😊😊Now you can start using the link:\n\n{unique_link}"""
                 )
                 await messageInit.delete()
-        else:
+        # else:
             # await bot.send_message(
             #     message.chat.id,
             #     f"""
