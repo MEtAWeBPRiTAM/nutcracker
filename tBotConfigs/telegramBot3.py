@@ -66,17 +66,17 @@ async def start_command(bot, message):
 @app.on_message(filters.command("availablebots"))
 async def available_bots(bot, message):
     bot_list = [
+         (
+            """              nutcracker video convert bot.           """,
+            "https://t.me/nutcracker_video_convert_bot",
+        ),
         (
             """              NutCracker Link Convert Bot             """,
-            "https://t.me/bot1",
+            "https://t.me/NutCracker_Link_Convert_Bot",
         ),
         (
-            """              Your Second Bot Name             """,
-            "https://t.me/bot2",
-        ),
-        (
-            """              Your Third Bot Name             """,
-            "https://t.me/bot3",
+            """              NutCracker Finance Bot             """,
+            "https://t.me/NutCracker_Finance_Bot",
         ),
     ]
 

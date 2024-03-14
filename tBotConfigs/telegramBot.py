@@ -87,12 +87,16 @@ async def getAccountInfo(bot, message):
 async def availableBots(bot, message):
     bot_list = [
         (
+            """              nutcracker video convert bot.           """,
+            "https://t.me/nutcracker_video_convert_bot",
+        ),
+        (
             """              NutCracker Link Convert Bot             """,
             "https://t.me/NutCracker_Link_Convert_Bot",
         ),
         (
-            """              nutcracker video convert bot.           """,
-            "https://t.me/nutcracker_video_convert_bot",
+            """              NutCracker Finance Bot             """,
+            "https://t.me/NutCracker_Finance_Bot",
         ),
     ]
 
