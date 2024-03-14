@@ -227,14 +227,14 @@ async def handleImage(bot, message):
                 )
                 await messageInit.delete()
         else:
-            await bot.send_message(
-                message.chat.id,
-                f"""
-                                                We Only accept videos or video link .. 
+            # await bot.send_message(
+            #     message.chat.id,
+            #     f"""
+            #                                     We Only accept videos or video link .. 
 
-                                          """,
-                reply_to_message_id=message.message_id,
-            )
+            #                               """,
+            #     reply_to_message_id=message.message_id,
+            # )
 
 
 @app.on_message(filters.text)
