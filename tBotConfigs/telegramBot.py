@@ -142,7 +142,6 @@ async def handleMessage(bot, message):
             message.chat.id, """\nPlease Choose From Menu Options... \n\n👇👇"""
         )
 
-New command to rename the title of the video
 @app.on_message(filters.command("titlerename"))
 async def titleRename(bot, message):
     # Extract user input and check if it contains a new title
@@ -167,6 +166,8 @@ async def titleRename(bot, message):
     )
     
     await bot.send_message(message.chat.id, f"The title of your video has been updated to '{new_title}'.")
+    
+    
 @app.on_message(filters.video)
 async def handle_video(bot, message: Message):
     messageInit = await message.reply("Processing request...")
