@@ -253,10 +253,10 @@ async def handleMessage(bot, message):
                 f"""Your video has been uploaded successfully... \n\n😊😊Now you can start using the link:\n\n{unique_link}"""
             )
         await messageInit.delete()
-    else:
-        await bot.send_message(
-            message.chat.id, """\nPlease Choose From Menu Options... \n\n👇👇"""
-        )
+    # else:
+    #     await bot.send_message(
+    #         message.chat.id, """\nPlease Choose From Menu Options... \n\n👇👇"""
+    #     )
 
 
 async def process_video_link(
