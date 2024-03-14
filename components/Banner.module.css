@@ -5,6 +5,7 @@
     background-color: black;
     height: 100vh;
 }
+
 .section1 {
     padding: 2rem 4rem;
     display: flex;
@@ -20,9 +21,11 @@
     display: flex;
     align-items: center;
 }
-.section1 .right{
+
+.section1 .right {
     height: 80%;
 }
+
 .section1 .left h1 {
     font-size: 52px;
     line-height: 1.2;
@@ -76,27 +79,31 @@
     object-fit: contain;
 }
 
-.right .usp1{
+.right .usp1 {
     position: absolute;
     top: 0;
     left: 0;
 }
-.right .usp2{
+
+.right .usp2 {
     position: absolute;
     top: 0;
     right: 0;
 }
-.right .usp3{
+
+.right .usp3 {
     position: absolute;
     bottom: 0;
     left: 0;
 }
-.right .usp4{
+
+.right .usp4 {
     position: absolute;
     bottom: 0;
     right: 0;
 }
-.right .usp{
+
+.right .usp {
     background-color: white;
     color: #000;
     padding: 8px 12px;
@@ -104,8 +111,8 @@
     font-size: 17px;
     font-weight: 500;
     animation: moveUp 7s infinite;
-
 }
+
 @keyframes moveUp {
 
     0%,
