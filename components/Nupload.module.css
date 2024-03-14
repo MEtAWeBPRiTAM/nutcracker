@@ -139,12 +139,18 @@
     height: 150px;
     overflow-y: auto;
     position: relative;
+    color: white;
 }
 .linkcontainer h3{
     font-size: 1.7rem;
     font-weight: 500;
+    margin-bottom: 10px;
 }
-
+.videoLink ul li a{
+    text-decoration: none;
+    color: blue;
+    font-weight: 400;
+}
 .copybutton{
     border: none;
     padding: 10px;
