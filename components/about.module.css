@@ -1,8 +1,9 @@
 .maincontainer {
     height: 100vh;
-    background: url(/static/images/bg.jpg) no-repeat;
-    background-size: cover;
+    /* background: url(/static/images/bg.jpg) no-repeat;
+    background-size: cover; */
     display: flex;
+    background-color: black;
     flex-direction: column;
 }
 

@@ -134,12 +134,10 @@ const UploadForm = ({ session }) => {
               <ul>
                 <li>We offer video share and earn revenue model.</li>
                 <li>
-                  By uploading a video here you get a temporary url. You need
-                  make it real url by using telegram.
+                  Easy to use, earning method by doing almost nothing.
                 </li>
                 <li>
-                  By uploading a video here you get a temporary url. You need
-                  make it real url by using telegram.
+                  You can just get started with uploading a video.
                 </li>
               </ul>
             </div>

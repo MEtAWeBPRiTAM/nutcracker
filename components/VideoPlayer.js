@@ -32,11 +32,11 @@ function VideoPlayer({ videoId }) {
     return (
         <div>
             <div className={styles.container}>
-                <div className={styles.videocontainer}>
-                    <ReactPlayer url={videoUrl} controls={true} width="100%" height="100%" />
-                </div>
                 <div className={styles.videotitle}>
                     <h2>{videoDetails.videoName}</h2>
+                </div>
+                <div className={styles.videocontainer}>
+                    <ReactPlayer url={videoUrl} controls={true} width="100%" height="100%" />
                 </div>
             </div>
         </div>

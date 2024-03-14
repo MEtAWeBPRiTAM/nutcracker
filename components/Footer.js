@@ -9,7 +9,7 @@ const Footer = () => {
             <div className={styles.footerwrapper}>
                 <p>&copy; 2024 NutCracker. All rights reserved.</p>
                 <div className={styles.links}>
-                    <a href="/policy">Privacy Policy</a>
+                    {/* <a href="/policy">Privacy Policy</a> */}
                     <a href="/terms">Terms and Conditions</a>
                 </div>
             </div>

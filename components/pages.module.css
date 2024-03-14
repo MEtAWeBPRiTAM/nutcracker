@@ -1,11 +1,22 @@
 .maincontainer {
-    /* height: 100vh; */
-    background: url(/static/images/bg.jpg) no-repeat;
-    background-size: cover;
-    /* display: flex; */
-    /* flex-direction: column; */
+    height: 100vh;
+    /* background: url(/static/images/bg.jpg) no-repeat; */
+    /* background-size: cover; */
+    display: flex;
+    background-color: black;
+    flex-direction: column;
 }
-
+.maincontainer2{
+    overflow-y: auto;
+    flex: 1;
+}
+.maincontainer2::-webkit-scrollbar{
+    background-color: rgb(139, 137, 137);
+    width: 8px;
+}
+.maincontainer2::-webkit-scrollbar-thumb{
+    background-color: #404040;
+}
 .container{
     padding: 2rem 5rem;
     color: #fff;
