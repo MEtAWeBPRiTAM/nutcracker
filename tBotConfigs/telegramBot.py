@@ -313,6 +313,32 @@ async def getUserId(bot, message):
         message.chat.id, f"""Here is your 👤 user id:\n\n {user_id}"""
     )
 
+# New command to rename the title of the video
+@app.on_message(filters.command("titlerename"))
+async def titleRename(bot, message):
+    # Extract user input and check if it contains a new title
+    args = message.text.split(maxsplit=1)
+    if len(args) < 2:
+        await bot.send_message(message.chat.id, "Please provide the new title after the command.")
+        return
+    
+    new_title = args[1]
+    
+    # Get the user's uploaded video from the database (you may need to adjust this query based on your database schema)
+    user_id = message.from_user.id
+    video_info = videoCollection.find_one({"relatedUser": user_id})
+    if video_info is None:
+        await bot.send_message(message.chat.id, "You haven't uploaded any videos yet.")
+        return
+    
+    # Update the title in the database
+    videoCollection.update_one(
+        {"relatedUser": user_id},
+        {"$set": {"videoName": new_title}}
+    )
+    
+    await bot.send_message(message.chat.id, f"The title of your video has been updated to '{new_title}'.")
+
 # Other command handlers...
 
 @app.on_message(filters.video)
