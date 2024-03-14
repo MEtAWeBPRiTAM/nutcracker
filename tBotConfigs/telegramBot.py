@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 import re
 import asyncio
-import uvloop # Correct import statement
+import uvloop  # Correct import statement
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 import pymongo
@@ -34,10 +34,13 @@ app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=videoConverte
 
 # Handle commands
 
+
 def generate_random_hex(length):
-    characters = 'abcdef0123456789'
-    random_hex = ''.join(secrets.choice(characters) for _ in range(length))
+    characters = "abcdef0123456789"
+    random_hex = "".join(secrets.choice(characters) for _ in range(length))
     return random_hex
+
+
 def get_user_record(user_id):
     userInformation = userCollection.find_one({"userId": user_id})
     print(userInformation)
@@ -123,30 +126,42 @@ async def uploadFromDevice(bot, message):
 
 @app.on_message(filters.command("titlerename"))
 async def titleRename(bot, message):
-    # Extract user input and check if it contains a new title
+    # Check if the command is triggered via the menu button
+    if message.text == "/titlerename":
+        await bot.send_message(
+            message.chat.id, "Please enter the video ID (fileUniqueId):"
+        )
+        return
+
+    # If the command is not triggered via the menu button, extract the video ID
     args = message.text.split(maxsplit=1)
     if len(args) < 2:
-        await bot.send_message(message.chat.id, "Please provide the new title after the command.")
+        await bot.send_message(
+            message.chat.id, "Please provide the video ID along with the new title."
+        )
         return
-    
-    new_title = args[1]
-    
-    # Get the user's uploaded video from the database (you may need to adjust this query based on your database schema)
-    user_id = message.from_user.id
-    video_info = videoCollection.find_one({"relatedUser": user_id})
+
+    video_id, new_title = args[1].split(maxsplit=1)
+
+    # Get the user's uploaded video from the database
+    video_info = videoCollection.find_one({"fileUniqueId": video_id})
     if video_info is None:
-        await bot.send_message(message.chat.id, "You haven't uploaded any videos yet.")
+        await bot.send_message(
+            message.chat.id, "No video found with the provided video ID."
+        )
         return
-    
+
     # Update the title in the database
     videoCollection.update_one(
-        {"relatedUser": user_id},
-        {"$set": {"videoName": new_title}}
+        {"fileUniqueId": video_id}, {"$set": {"videoName": new_title}}
     )
-    
-    await bot.send_message(message.chat.id, f"The title of your video has been updated to '{new_title}'.")
-    
-    
+
+    await bot.send_message(
+        message.chat.id,
+        f"The title of the video with ID '{video_id}' has been updated to '{new_title}'.",
+    )
+
+
 @app.on_message(filters.video)
 async def handle_video(bot, message: Message):
     messageInit = await message.reply("Processing request...")
@@ -171,9 +186,7 @@ async def handle_video(bot, message: Message):
         except Exception as e:
             print(e)
             return
-        videoUrl = (
-            f"http://nutcracker.live/video/{message.video.file_unique_id}"
-        )
+        videoUrl = f"http://nutcracker.live/video/{message.video.file_unique_id}"
         await message.reply(
             f"""Your video has been uploaded successfully... \n\n😊😊Now you can start using the link:\n\n{videoUrl}"""
         )
@@ -223,6 +236,7 @@ async def handleImage(bot, message):
                 reply_to_message_id=message.message_id,
             )
 
+
 @app.on_message(filters.text)
 async def handleMessage(bot, message):
     user_id = message.from_user.id
@@ -269,8 +283,6 @@ async def process_video_link(
 app.run()
 
 
-
-
 # import os
 # from dotenv import load_dotenv
 # import re
@@ -282,4 +294,3 @@ app.run()
 # from pymongo import MongoClient
 # import datetime
 # import secrets
-
