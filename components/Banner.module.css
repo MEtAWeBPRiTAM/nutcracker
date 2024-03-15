@@ -134,3 +134,46 @@
         transform: translateX(8px);
     }
 }
+
+@media screen and (max-width:768px) {
+    .maincontainer{
+        height: fit-content;
+    }
+    .section1{
+        height: fit-content;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: .5rem;
+    }
+    .section1 .left , .section1 .right{
+        width: 100%;
+        height: fit-content;
+    }
+    .left{
+        padding: 1rem 0;
+    }
+    .left .wrapper{
+        width: 100%;
+    }
+    .right{
+        padding: 1.5rem 0;
+    }
+    .buttonsContainer{
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .button ,.buttonsec{
+        width: fit-content;
+        font-size: 15px;
+    }
+    .headingslogan{
+        margin-bottom: 1.5rem;
+    }
+    .section1 .left h1{
+        font-size: 2.4rem;
+    }
+    /* .usp{
+        position:  relative !important;
+    } */
+}

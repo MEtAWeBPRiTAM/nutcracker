@@ -28,7 +28,7 @@ const Banner = () => {
                 </div>
                 <div className={styles.right}>
                     <div className={styles.bannerimg}>
-                        <img src="/static/images/logo.svg" />
+                        <img src="/static/images/logo.svg"/>
                     </div>
                     <div className={`${styles.usp1} ${styles.usp}`}>Upload Videos</div>
                     <div className={`${styles.usp2} ${styles.usp}`}>Convert Link</div>

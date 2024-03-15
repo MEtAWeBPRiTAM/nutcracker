@@ -57,6 +57,14 @@
 }
 
 
-/* ===========
-   About Page 
-   =========== */
+@media (max-width:768px) {
+    .container{
+        padding: 1rem .5rem;
+    }
+    .mainheading{
+        font-size: 1.7rem;
+    }
+    .maincontainer2{
+        padding: 1rem 0 0 0;
+    }
+}

@@ -101,15 +101,15 @@
     position: relative;
     margin-right: 10px;
     margin-bottom: 10px;
-    flex: 0 0 calc(25% - 10px);
+    /* flex: 0 0 calc(25% - 10px); */
 }
 
 .videoPreview {
     position: relative;
     max-width: 100px;
-    max-height: 80px;
-    width: auto;
-    height: auto;
+    max-height: auto;
+    /* width: auto;
+    height: auto; */
 }
 
 .removeButton {
@@ -179,15 +179,49 @@
 }
 
 @media (max-width: 768px) {
+    .content {
+        height: fit-content;
+        padding: .5rem 0 1rem 0;
+    }
+
+    .container {
+        padding: 1.5rem .5rem .5rem .5rem;
+        flex-direction: column;
+        gap: 40px;
+        height: fit-content;
+        /* margin: .5rem 0; */
+    }
+
+    .maincontainer {
+        height: fit-content;
+    }
+
+    .leftpart,
+    .rightpart {
+        width: 100%;
+        height: fit-content;
+    }
+
+    .textcontainer {
+        margin-bottom: 20px;
+    }
+
+    .linkcontainer h3 {
+        font-size: 1.2rem;
+    }
 
     .selectedVideo {
         flex: 0 0 calc(50% - 10px);
     }
+
+    .selectedVideosContainer {
+        width: 200px !important;
+    }
 }
 
 @media (max-width: 480px) {
-
     .selectedVideo {
         flex: 0 0 calc(100% - 10px);
     }
+
 }

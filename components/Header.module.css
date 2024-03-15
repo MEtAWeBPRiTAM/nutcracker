@@ -56,10 +56,8 @@
 
 @media (max-width:768px) {
     .header {
-        justify-content: center;
-    }
-
-    .navbar {
-        display: none;
+        flex-direction: column ;
+        height: fit-content;
+        padding: .5rem 0;
     }
 }

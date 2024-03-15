@@ -85,8 +85,8 @@ const UploadForm = ({ session }) => {
                 {uploading
                   ? "Uploading..."
                   : files.length === 0
-                  ? "Select Video"
-                  : `${files.length} Video(s) Selected`}
+                    ? "Select Video"
+                    : `${files.length} Video(s) Selected`}
               </label>
               <input
                 type="file"

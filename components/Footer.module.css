@@ -44,3 +44,14 @@
 .footer .links a:hover{
     color: #893168;
 }
+
+@media (max-width:768px) {
+    .footer{
+        position: relative;
+        padding: 1rem;
+    }
+    .footerwrapper{
+        flex-direction: column;
+        gap: 10px;
+    }
+}
