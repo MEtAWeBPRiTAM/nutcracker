@@ -161,7 +161,6 @@ async def titleRename(bot, message):
         f"The title of the video with ID '{video_id}' has been updated to '{new_title}'.",
     )
 
-
 @app.on_message(filters.video)
 async def handle_video(bot, message: Message):
     messageInit = await message.reply("Processing request...")
@@ -172,7 +171,7 @@ async def handle_video(bot, message: Message):
         video_file = open(video_path, "rb")
         fileName = os.path.basename(video_path)
         try:
-            fileUniqueId = generate_random_hex(24)
+            fileUniqueId = generate_random_hex(24)  # Generate a random hexadecimal string of length 24
             video_info = {
                 "videoName": fileName,
                 "fileLocalPath": f"/public/uploads/{fileName}",
@@ -195,10 +194,9 @@ async def handle_video(bot, message: Message):
     except Exception as e:
         print(e)
         await messageInit.edit(
-            f"An error occured while processing your request. Please try again later."
+            f"An error occurred while processing your request. Please try again later."
         )
         return
-
 
 @app.on_message(filters.photo)
 async def handleImage(bot, message):
@@ -254,10 +252,10 @@ async def handleMessage(bot, message):
                 f"""Your video has been uploaded successfully... \n\n😊😊Now you can start using the link:\n\n{unique_link}"""
             )
         await messageInit.delete()
-    # else:
-    #     await bot.send_message(
-    #         message.chat.id, """\nPlease Choose From Menu Options... \n\n👇👇"""
-    #     )
+    else:
+        await bot.send_message(
+            message.chat.id, """\nPlease Choose From Menu Options... \n\n👇👇"""
+        )
 
 
 async def process_video_link(
@@ -266,20 +264,18 @@ async def process_video_link(
     video_path = await app.download_media(video_link)
     video_meta = await app.get_media_info(video_path)
     fileName = os.path.basename(video_path)
-    fileUniqueId = generate_random_hex(24)
-    
     video_info = {
         "videoName": fileName,
         "fileLocalPath": f"/public/uploads/{fileName}",
         "file_size": video_meta.file_size,
         "duration": video_meta.duration,
         "mime_type": video_meta.mime_type,
-        "fileUniqueId": fileUniqueId,
+        "fileUniqueId": video_meta.file_unique_id,
         "relatedUser": user_id,
         "userName": sender_username or "",
     }
     videoCollection.insert_one(video_info)
-    videoUrl = f"http://nutcracker.live/video/{video_meta.fileUniqueId}"
+    videoUrl = f"http://nutcracker.live/video/{video_meta.file_unique_id}"
     return videoUrl
 
 
