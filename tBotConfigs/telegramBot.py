@@ -141,10 +141,10 @@ async def titleRename(bot, message):
         )
         return
 
-    fileUniqueId, new_title = args[1].split(maxsplit=1)
+    video_id, new_title = args[1].split(maxsplit=1)
 
     # Get the user's uploaded video from the database
-    video_info = videoCollection.find_one({"fileUniqueId": fileUniqueId})
+    video_info = videoCollection.find_one({"fileUniqueId": video_id})
     if video_info is None:
         await bot.send_message(
             message.chat.id, "No video found with the provided video ID."
@@ -153,12 +153,12 @@ async def titleRename(bot, message):
 
     # Update the title in the database
     videoCollection.update_one(
-        {"fileUniqueId": fileUniqueId}, {"$set": {"videoName": new_title}}
+        {"fileUniqueId": video_id}, {"$set": {"videoName": new_title}}
     )
 
     await bot.send_message(
         message.chat.id,
-        f"The title of the video with ID '{fileUniqueId}' has been updated to '{new_title}'.",
+        f"The title of the video with ID '{video_id}' has been updated to '{new_title}'.",
     )
 
 
@@ -226,33 +226,33 @@ async def handleImage(bot, message):
                     f"""Your video has been uploaded successfully... \n\n😊😊Now you can start using the link:\n\n{unique_link}"""
                 )
                 await messageInit.delete()
-        # else:
-            # await bot.send_message(
-            #     message.chat.id,
-            #     f"""
-            #                                     We Only accept videos or video link .. 
+        else:
+            await bot.send_message(
+                message.chat.id,
+                f"""
+                                                We Only accept videos or video link .. 
 
-            #                               """,
-            #     reply_to_message_id=message.message_id,
-            # )
+                                          """,
+                reply_to_message_id=message.message_id,
+            )
 
 
-# @app.on_message(filters.text)
-# async def handleMessage(bot, message):
-#     user_id = message.from_user.id
-#     sender_username = message.from_user.username
-#     video_links = re.findall(r"(https?://\S+)", message.text)
-#     if video_links:
-#         messageInit = await bot.send_message(
-#             message.chat.id, "Processing request... 👍"
-#         )
-#         await bot.send_chat_action(message.chat.id, "typing")
-#         for video_link in video_links:
-#             unique_link = await process_video_link(video_link, user_id, sender_username)
-#             await message.reply(
-#                 f"""Your video has been uploaded successfully... \n\n😊😊Now you can start using the link:\n\n{unique_link}"""
-#             )
-#         await messageInit.delete()
+@app.on_message(filters.text)
+async def handleMessage(bot, message):
+    user_id = message.from_user.id
+    sender_username = message.from_user.username
+    video_links = re.findall(r"(https?://\S+)", message.text)
+    if video_links:
+        messageInit = await bot.send_message(
+            message.chat.id, "Processing request... 👍"
+        )
+        await bot.send_chat_action(message.chat.id, "typing")
+        for video_link in video_links:
+            unique_link = await process_video_link(video_link, user_id, sender_username)
+            await message.reply(
+                f"""Your video has been uploaded successfully... \n\n😊😊Now you can start using the link:\n\n{unique_link}"""
+            )
+        await messageInit.delete()
     # else:
     #     await bot.send_message(
     #         message.chat.id, """\nPlease Choose From Menu Options... \n\n👇👇"""

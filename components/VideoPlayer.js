@@ -23,6 +23,29 @@ function VideoPlayer({ videoId }) {
         }
     }, [videoId]);
 
+    const handleShare = async () => {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: videoDetails.videoName,
+                    url: window.location.href
+                });
+            } catch (error) {
+                console.error('Error sharing video:', error);
+            }
+        } else {
+            // Fallback for browsers that don't support Web Share API
+            // You can implement your custom share functionality here
+            const shareUrl = window.location.href;
+            try {
+                await navigator.clipboard.writeText(shareUrl);
+                alert('Video link copied to clipboard!');
+            } catch (error) {
+                console.error('Error copying video link:', error);
+            }
+        }
+    };
+
     if (!videoDetails) {
         return <div>Loading...</div>;
     }
@@ -32,11 +55,16 @@ function VideoPlayer({ videoId }) {
     return (
         <div>
             <div className={styles.container}>
-                <div className={styles.videotitle}>
-                    <h2>{videoDetails.videoName}</h2>
-                </div>
-                <div className={styles.videocontainer}>
-                    <ReactPlayer url={videoUrl} controls={true} width="100%" height="100%" />
+                <div className={styles.innercontainer}>
+                    <div className={styles.videotitle}>
+                        <h2>{videoDetails.videoName}</h2>
+                    </div>
+                    <div className={styles.videocontainer}>
+                        <ReactPlayer className={styles.video} url={videoUrl} controls={true} width="100%" height="100%" />
+                    </div>
+                    <div className={styles.shareButton}>
+                        <button onClick={handleShare}>Share</button>
+                    </div>
                 </div>
             </div>
         </div>
