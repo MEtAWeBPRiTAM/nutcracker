@@ -13,7 +13,7 @@ from pymongo import MongoClient
 import datetime
 import secrets
 
-# asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 load_dotenv()
 
