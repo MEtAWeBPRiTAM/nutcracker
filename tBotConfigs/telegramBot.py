@@ -1,7 +1,8 @@
 # Latest Script Update: 2021-07-20
 import os
-import random
+import re
 import string
+import random
 from dotenv import load_dotenv
 import re
 import asyncio
@@ -177,12 +178,16 @@ async def handle_video(bot, message: Message):
         print(message.video) # Get the original filename from the message
         video_path = await bot.download_media(file_id, file_name="../public/uploads/")
         video_file_extension = os.path.splitext(video_path)[1]
+        print(video_file_extension)
+        print(video_file_extension)
+        print(video_path)
         new_filename = generate_random_filename() + video_file_extension
         new_video_path = os.path.join("../public/uploads/", new_filename)
+        print(new_video_path)
         os.rename(video_path, new_video_path)
         video_file = open(new_video_path, "rb")
         try:
-            fileUniqueId = generate_random_hex(24)
+            fileUniqueId = message.video.file_unique_id
             video_info = {
                 "videoName": new_filename,
                 "fileLocalPath": f"/public/uploads/{new_filename}",
@@ -224,7 +229,7 @@ async def handleImage(bot, message):
             messageInit = await bot.send_message(
                 message.chat.id, "Processing request... 👍"
             )
-            await bot.send_chat_action(message.chat.id, "typing")
+            # await bot.send_chat_action(message.chat.id, "typing")
             for video_link in video_links:
                 localFilePath = os.path.join(
                     f"../public/uploads", f"{os.path.basename(video_link)}"
@@ -256,9 +261,9 @@ async def handleMessage(bot, message):
         messageInit = await bot.send_message(
             message.chat.id, "Processing request... 👍"
         )
-        await bot.send_chat_action(message.chat.id, "typing")
+        # await bot.send_chat_action(message.chat.id, "typing")
         for video_link in video_links:
-            unique_link = await process_video_link(video_link, user_id, sender_username)
+            unique_link = await process_video_link(video_link, user_id, sender_username)  # Assuming this function is defined elsewhere
             await message.reply(
                 f"""Your video has been uploaded successfully... \n\n😊😊Now you can start using the link:\n\n{unique_link}"""
             )
@@ -267,7 +272,6 @@ async def handleMessage(bot, message):
         await bot.send_message(
             message.chat.id, """\nPlease Choose From Menu Options... \n\n👇👇"""
         )
-
 
 async def process_video_link(
     video_link: str, user_id: int, sender_username: str
