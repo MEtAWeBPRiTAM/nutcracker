@@ -179,7 +179,7 @@ async def handle_video(bot, message: Message):
                 "file_size": message.video.file_size,
                 "duration": message.video.duration,
                 "mime_type": message.video.mime_type,
-                "fileUniqueId": {fileUniqueId},
+                "fileUniqueId": fileUniqueId,
                 "relatedUser": user_id,
                 "userName": message.from_user.username or "",
             }
@@ -266,18 +266,20 @@ async def process_video_link(
     video_path = await app.download_media(video_link)
     video_meta = await app.get_media_info(video_path)
     fileName = os.path.basename(video_path)
+    fileUniqueId = generate_random_hex(24)
+    
     video_info = {
         "videoName": fileName,
         "fileLocalPath": f"/public/uploads/{fileName}",
         "file_size": video_meta.file_size,
         "duration": video_meta.duration,
         "mime_type": video_meta.mime_type,
-        "fileUniqueId": video_meta.file_unique_id,
+        "fileUniqueId": fileUniqueId,
         "relatedUser": user_id,
         "userName": sender_username or "",
     }
     videoCollection.insert_one(video_info)
-    videoUrl = f"http://nutcracker.live/video/{video_meta.file_unique_id}"
+    videoUrl = f"http://nutcracker.live/video/{fileUniqueId}"
     return videoUrl
 
 
