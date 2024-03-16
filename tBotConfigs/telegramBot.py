@@ -172,21 +172,22 @@ async def handle_video(bot, message: Message):
         video_file = open(video_path, "rb")
         fileName = os.path.basename(video_path)
         try:
+            fileUniqueId = generate_random_hex(24)
             video_info = {
                 "videoName": fileName,
                 "fileLocalPath": f"/public/uploads/{fileName}",
                 "file_size": message.video.file_size,
                 "duration": message.video.duration,
                 "mime_type": message.video.mime_type,
-                "fileUniqueId": message.video.file_unique_id,
-                "relatedUser:": user_id,
+                "fileUniqueId": {fileUniqueId},
+                "relatedUser": user_id,
                 "userName": message.from_user.username or "",
             }
             videoCollection.insert_one(video_info)
         except Exception as e:
             print(e)
             return
-        videoUrl = f"http://nutcracker.live/video/{message.video.file_unique_id}"
+        videoUrl = f"http://nutcracker.live/video/{fileUniqueId}"
         await message.reply(
             f"""Your video has been uploaded successfully... \n\n😊😊Now you can start using the link:\n\n{videoUrl}"""
         )
