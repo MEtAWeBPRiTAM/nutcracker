@@ -168,7 +168,8 @@ async def handle_video(bot, message: Message):
     try:
         user_id = message.from_user.id
         file_id = message.video.file_id
-        video_path = await bot.download_media(file_id, file_name="../public/uploads/")
+        file_name = message.video.file_name  # Get the original filename from the message
+        video_path = await bot.download_media(file_id, file_name="../public/uploads/" + file_name)
         video_file = open(video_path, "rb")
         fileName = os.path.basename(video_path)
         try:
