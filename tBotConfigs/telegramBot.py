@@ -1,9 +1,11 @@
 # Latest Script Update: 2021-07-20
 import os
+import random
+import string
 from dotenv import load_dotenv
 import re
 import asyncio
-import uvloop  # Correct import statement
+# import uvloop  # Correct import statement
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 import pymongo
@@ -11,7 +13,7 @@ from pymongo import MongoClient
 import datetime
 import secrets
 
-asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+# asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 load_dotenv()
 
@@ -162,21 +164,28 @@ async def titleRename(bot, message):
     )
 
 
+def generate_random_filename(length=10):
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for _ in range(length))
+
 @app.on_message(filters.video)
 async def handle_video(bot, message: Message):
     messageInit = await message.reply("Processing request...")
     try:
         user_id = message.from_user.id
         file_id = message.video.file_id
-        file_name = message.video.file_name  # Get the original filename from the message
-        video_path = await bot.download_media(file_id, file_name="../public/uploads/" + file_name)
-        video_file = open(video_path, "rb")
-        fileName = os.path.basename(video_path)
+        print(message.video) # Get the original filename from the message
+        video_path = await bot.download_media(file_id, file_name="../public/uploads/")
+        video_file_extension = os.path.splitext(video_path)[1]
+        new_filename = generate_random_filename() + video_file_extension
+        new_video_path = os.path.join("../public/uploads/", new_filename)
+        os.rename(video_path, new_video_path)
+        video_file = open(new_video_path, "rb")
         try:
             fileUniqueId = generate_random_hex(24)
             video_info = {
-                "videoName": fileName,
-                "fileLocalPath": f"/public/uploads/{fileName}",
+                "videoName": new_filename,
+                "fileLocalPath": f"/public/uploads/{new_filename}",
                 "file_size": message.video.file_size,
                 "duration": message.video.duration,
                 "mime_type": message.video.mime_type,
@@ -199,7 +208,6 @@ async def handle_video(bot, message: Message):
             f"An error occured while processing your request. Please try again later."
         )
         return
-
 
 @app.on_message(filters.photo)
 async def handleImage(bot, message):
