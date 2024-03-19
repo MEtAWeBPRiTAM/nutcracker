@@ -12,6 +12,8 @@ import pymongo
 from pymongo import MongoClient
 import datetime
 import secrets
+from pyrogram import ChatAction
+
 
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
@@ -252,11 +254,12 @@ async def handleMessage(bot, message):
     user_id = message.from_user.id
     sender_username = message.from_user.username
     video_links = re.findall(r"(https?://\S+)", message.text)
+    
     if video_links:
         messageInit = await bot.send_message(
             message.chat.id, "Processing request... 👍"
         )
-        await bot.send_chat_action(message.chat.id, "typing")
+        await bot.send_chat_action(message.chat.id, ChatAction.TYPING)
         for video_link in video_links:
             unique_link = await process_video_link(video_link, user_id, sender_username)
             await message.reply(
@@ -295,14 +298,3 @@ async def process_video_link(
 app.run()
 
 
-# import os
-# from dotenv import load_dotenv
-# import re
-# import asyncio
-# import uvloop
-# from pyrogram import Client, filters
-# from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-# import pymongo
-# from pymongo import MongoClient
-# import datetime
-# import secrets
