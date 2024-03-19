@@ -175,10 +175,10 @@ async def handle_video(bot, message: Message):
         user_id = message.from_user.id
         file_id = message.video.file_id
         print(message.video) # Get the original filename from the message
-        video_path = await bot.download_media(file_id, file_name="./public/uploads/")
+        video_path = await bot.download_media(file_id, file_name="../public/uploads/")
         video_file_extension = os.path.splitext(video_path)[1]
         new_filename = generate_random_filename() + video_file_extension
-        new_video_path = os.path.join("./public/uploads/", new_filename)
+        new_video_path = os.path.join("../public/uploads/", new_filename)
         os.rename(video_path, new_video_path)
         video_file = open(new_video_path, "rb")
         try:
@@ -227,7 +227,7 @@ async def handleImage(bot, message):
             await bot.send_chat_action(message.chat.id, "typing")
             for video_link in video_links:
                 localFilePath = os.path.join(
-                    f"./public/uploads", f"{os.path.basename(video_link)}"
+                    f"../public/uploads", f"{os.path.basename(video_link)}"
                 )
                 unique_link = await process_video_link(
                     video_link, user_id, sender_username, localFilePath, uniqueId
