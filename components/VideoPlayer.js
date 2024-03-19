@@ -76,7 +76,7 @@ function VideoPlayer({ videoId }) {
         return <div>Loading...</div>;
     }
 
-    const videoUrl = `/public/uploads/${videoDetails.videoName}`;
+    const videoUrl = `/uploads/${videoDetails.videoName}`;
     console.log(videoUrl);
 
     return (
