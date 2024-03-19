@@ -177,7 +177,7 @@ async def handle_video(bot, message: Message):
         print(message.video) # Get the original filename from the message
         video_path = await bot.download_media(file_id, file_name="../public/uploads/")
         video_file_extension = os.path.splitext(video_path)[1]
-        new_filename = message.video.file_name
+        new_filename = message.video.file_name + video_file_extension
         new_video_path = os.path.join("../public/uploads/", new_filename)
         os.rename(video_path, new_video_path)
         video_file = open(new_video_path, "rb")
