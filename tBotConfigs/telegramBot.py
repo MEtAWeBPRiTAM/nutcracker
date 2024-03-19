@@ -182,14 +182,14 @@ async def handle_video(bot, message: Message):
         os.rename(video_path, new_video_path)
         video_file = open(new_video_path, "rb")
         try:
-            fileUniqueId = generate_random_hex(24)
+            videoId = generate_random_hex(24)
             video_info = {
-                "videoName": str(new_filename),
+                "videoName": new_filename,
                 "fileLocalPath": f"/public/uploads/{new_filename}",
                 "file_size": message.video.file_size,
                 "duration": message.video.duration,
                 "mime_type": message.video.mime_type,
-                "fileUniqueId": fileUniqueId,
+                "fileUniqueId": videoId,
                 "relatedUser": user_id,
                 "userName": message.from_user.username or "",
             }
@@ -197,7 +197,7 @@ async def handle_video(bot, message: Message):
         except Exception as e:
             print(e)
             return
-        videoUrl = f"http://nutcracker.live/video/{fileUniqueId}"
+        videoUrl = f"http://nutcracker.live/video/{videoId}"
         await message.reply(
             f"""Your video has been uploaded successfully... \n\n😊😊Now you can start using the link:\n\n{videoUrl}"""
         )
@@ -275,7 +275,7 @@ async def process_video_link(
     video_path = await app.download_media(video_link)
     video_meta = await app.get_media_info(video_path)
     fileName = os.path.basename(video_path)
-    fileUniqueId = generate_random_hex(24)
+    videoId = generate_random_hex(24)
     
     video_info = {
         "videoName": fileName,
@@ -283,12 +283,12 @@ async def process_video_link(
         "file_size": video_meta.file_size,
         "duration": video_meta.duration,
         "mime_type": video_meta.mime_type,
-        "fileUniqueId": fileUniqueId,
+        "fileUniqueId": videoId,
         "relatedUser": user_id,
         "userName": sender_username or "",
     }
     videoCollection.insert_one(video_info)
-    videoUrl = f"http://nutcracker.live/video/{fileUniqueId}"
+    videoUrl = f"http://nutcracker.live/video/{videoId}"
     return videoUrl
 
 
