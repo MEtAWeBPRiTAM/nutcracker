@@ -23,8 +23,31 @@ function VideoPlayer({ videoId }) {
         }
     }, [videoId]);
 
+    // const handleShare = async () => {
+    //     if (navigator.share) {
+    //         try {
+    //             await navigator.share({
+    //                 title: videoDetails.videoName,
+    //                 url: window.location.href
+    //             });
+    //         } catch (error) {
+    //             console.error('Error sharing video:', error);
+    //         }
+    //     } else {
+    //         // Fallback for browsers that don't support Web Share API
+    //         // You can implement your custom share functionality here
+    //         const shareUrl = window.location.href;
+    //         try {
+    //             await navigator.clipboard.writeText(shareUrl);
+    //             alert('Video link copied to clipboard!');
+    //         } catch (error) {
+    //             console.error('Error copying video link:', error);
+    //         }
+    //     }
+    // };
+
     const handleShare = async () => {
-        if (navigator.share) {
+        if (videoDetails && navigator.share) {
             try {
                 await navigator.share({
                     title: videoDetails.videoName,
