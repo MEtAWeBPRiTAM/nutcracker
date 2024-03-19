@@ -164,9 +164,9 @@ async def titleRename(bot, message):
     )
 
 
-def generate_random_filename(length=10):
-    letters = string.ascii_lowercase
-    return ''.join(random.choice(letters) for _ in range(length))
+# def generate_random_filename(length=10):
+#     letters = string.ascii_lowercase
+#     return ''.join(random.choice(letters) for _ in range(length))
 
 @app.on_message(filters.video)
 async def handle_video(bot, message: Message):
@@ -176,6 +176,11 @@ async def handle_video(bot, message: Message):
         file_id = message.video.file_id
         original_filename = message.video.file_name  # Get the original filename from the message
         video_path = await bot.download_media(file_id, file_name="../public/uploads/")
+        
+        if video_path is None:
+            await messageInit.edit("Failed to download the video.")
+            return
+        
         new_video_path = os.path.join("../public/uploads/", original_filename)
         os.rename(video_path, new_video_path)
         
@@ -194,6 +199,7 @@ async def handle_video(bot, message: Message):
             videoCollection.insert_one(video_info)
         except Exception as e:
             print(e)
+            await messageInit.edit("An error occurred while processing your request.")
             return
         
         videoUrl = f"http://nutcracker.live/video/{videoId}"
@@ -204,9 +210,7 @@ async def handle_video(bot, message: Message):
     
     except Exception as e:
         print(e)
-        await messageInit.edit(
-            f"An error occurred while processing your request. Please try again later."
-        )
+        await messageInit.edit("An error occurred while processing your request.")
         return
 
 
