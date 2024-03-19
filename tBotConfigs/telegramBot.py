@@ -6,13 +6,13 @@ from dotenv import load_dotenv
 import re
 import asyncio
 import uvloop  # Correct import statement
-from pyrogram import Client, filters
+from pyrogram import Client, filters, ChatAction
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 import pymongo
 from pymongo import MongoClient
 import datetime
 import secrets
-from pyrogram import ChatAction
+ 
 
 
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
