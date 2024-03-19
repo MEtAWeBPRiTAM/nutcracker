@@ -174,18 +174,16 @@ async def handle_video(bot, message: Message):
     try:
         user_id = message.from_user.id
         file_id = message.video.file_id
-        name = print(message.video) # Get the original filename from the message
+        original_filename = message.video.file_name  # Get the original filename from the message
         video_path = await bot.download_media(file_id, file_name="../public/uploads/")
-        # video_file_extension = os.path.splitext(video_path)[1]
-        new_filename = name
-        new_video_path = os.path.join("../public/uploads/", name)
+        new_video_path = os.path.join("../public/uploads/", original_filename)
         os.rename(video_path, new_video_path)
         video_file = open(new_video_path, "rb")
         try:
             videoId = generate_random_hex(24)
             video_info = {
-                "videoName": new_filename ,
-                "fileLocalPath": f"/public/uploads/{new_filename }",
+                "videoName": original_filename,
+                "fileLocalPath": f"/public/uploads/{original_filename}",
                 "file_size": message.video.file_size,
                 "duration": message.video.duration,
                 "mime_type": message.video.mime_type,
@@ -205,7 +203,7 @@ async def handle_video(bot, message: Message):
     except Exception as e:
         print(e)
         await messageInit.edit(
-            f"An error occured while processing your request. Please try again later."
+            f"An error occurred while processing your request. Please try again later."
         )
         return
 
