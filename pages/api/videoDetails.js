@@ -16,7 +16,7 @@ export default async function handler(req, res) {
       const db = client.db("nutCracker");
       const collection = db.collection("videosRecord");
 
-      const videoDetails = await collection.findOne({ fileUniqueId: videoId });
+      const videoDetails = await collection.findOne({ videoId: videoId });
 
       if (videoDetails) {
         res.status(200).json(videoDetails);
