@@ -13,8 +13,11 @@ function VideoPlayer({ videoId }) {
             try {
                 const data = await fetchVideoDetails(videoId);
                 setVideoDetails(data);
+                console.log(setVideoDetails);
+                console.log(data);
             } catch (error) {
                 console.error('Error fetching video details:', error);
+                console.log('Error fetching video details:', error);
             }
         };
 
@@ -74,6 +77,7 @@ function VideoPlayer({ videoId }) {
     }
 
     const videoUrl = `/uploads/${videoDetails.videoName}`;
+    console.log(videoUrl);
 
     return (
         <div>
