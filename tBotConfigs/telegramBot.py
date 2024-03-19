@@ -176,16 +176,16 @@ async def handle_video(bot, message: Message):
         file_id = message.video.file_id
         name = print(message.video) # Get the original filename from the message
         video_path = await bot.download_media(file_id, file_name="../public/uploads/")
-        # video_file_extension = os.path.splitext(video_path)[1]
-        # new_filename = generate_random_filename() + video_file_extension
+        video_file_extension = os.path.splitext(video_path)[1]
+        new_filename = name + video_file_extension
         new_video_path = os.path.join("../public/uploads/", name)
         os.rename(video_path, new_video_path)
         video_file = open(new_video_path, "rb")
         try:
             videoId = generate_random_hex(24)
             video_info = {
-                "videoName": name,
-                "fileLocalPath": f"/public/uploads/{name}",
+                "videoName": new_filename ,
+                "fileLocalPath": f"/public/uploads/{new_filename }",
                 "file_size": message.video.file_size,
                 "duration": message.video.duration,
                 "mime_type": message.video.mime_type,
