@@ -182,7 +182,13 @@ async def handle_video(bot, message: Message):
             return
         
         new_video_path = os.path.join("../public/uploads/", original_filename)
-        os.rename(video_path, new_video_path)
+        
+        try:
+            os.rename(video_path, new_video_path)
+        except Exception as e:
+            print(e)
+            await messageInit.edit("An error occurred while processing your request.")
+            return
         
         try:
             videoId = generate_random_hex(24)
