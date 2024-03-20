@@ -49,12 +49,13 @@ export default async function handler(req, res) {
 
           const db = client.db("nutCracker");
           const videoCollections = db.collection("videosRecord");
-          const pathLc = `/public/uploads/${videoId}`;
+          const pathLc = `/public/uploads/${filename}`;
           const videoTemplate = {
             fileUniqueId: videoId,
             videoName: filename,
             localStoragePath: pathLc,
             relatedUser: null,
+            viewCount: 0
           };
 
           await videoCollections.insertOne(videoTemplate);
