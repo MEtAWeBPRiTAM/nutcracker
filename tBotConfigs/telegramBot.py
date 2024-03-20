@@ -56,6 +56,7 @@ def insert_user_record(user_id, userName):
             "userName": userName,
             "upiNumber": 0,
             "uploadedVideos": 0,
+            "totalViews": 0,
             "createdAt": datetime.datetime.now(),
         }
     )
