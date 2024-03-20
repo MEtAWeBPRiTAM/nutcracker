@@ -186,7 +186,7 @@ async def handle_video(bot, message: Message):
             videoId = generate_random_hex(24)
             video_info = {
                 "videoName": new_filename,
-                "fileLocalPath": f"/public/uploads/{new_filename}",
+                "fileLocalPath": f"/public/uploads/{videoId}",
                 "file_size": message.video.file_size,
                 "duration": message.video.duration,
                 "mime_type": message.video.mime_type,
