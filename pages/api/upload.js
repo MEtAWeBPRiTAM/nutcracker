@@ -49,7 +49,7 @@ export default async function handler(req, res) {
 
           const db = client.db("nutCracker");
           const videoCollections = db.collection("videosRecord");
-          const pathLc = `/public/uploads/${filename}`;
+          const pathLc = `/public/uploads/${videoId}`;
           const videoTemplate = {
             fileUniqueId: videoId,
             videoName: filename,
