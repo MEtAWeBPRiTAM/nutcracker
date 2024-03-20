@@ -54,7 +54,7 @@ export default async function handler(req, res) {
             fileUniqueId: videoId,
             videoName: filename,
             localStoragePath: pathLc,
-            relatedUser: null,
+            relatedUser: '25651563',
             viewCount: 0
           };
 
