@@ -176,24 +176,24 @@ async def handle_video(bot, message: Message):
         user_id = message.from_user.id
         video_file = message.video
         original_filename = video_file.file_name
-
+        videoId = generate_random_hex(24)
         # Download the video
         video_path = await bot.download_media(video_file.file_id, file_name="./public/uploads/")
 
         # Generate a new filename and move the video to the new location
-        video_file_extension = os.path.splitext(video_path)[1]
-        new_filename = generate_random_hex(24)
-        new_video_path = os.path.join("./public/uploads/",new_filename)
-        os.rename(video_path, new_video_path)
+        # video_file_extension = os.path.splitext(video_path)[1]
+        # new_filename = generate_random_hex(24)
+        # new_video_path = os.path.join("./public/uploads/",new_filename)
+        # os.rename(video_path, new_video_path)
 
         # Insert video information into MongoDB
         video_info = {
             "videoName": original_filename,
-            "fileLocalPath": f"/public/uploads/{new_filename}",
+            "fileLocalPath": f"/public/uploads/{original_filename}",
             "file_size": video_file.file_size,
             "duration": video_file.duration,
             "mime_type": video_file.mime_type,
-            "fileUniqueId": new_filename,
+            "fileUniqueId": videoId,
             "relatedUser": user_id,
             "userName": message.from_user.username or "",
             "viewCount": 0,
@@ -201,7 +201,7 @@ async def handle_video(bot, message: Message):
         videoCollection.insert_one(video_info)
 
         # Generate video URL
-        videoUrl = f"http://nutcracker.live/video/{new_filename}"
+        videoUrl = f"http://nutcracker.live/video/{videoId}"
 
         # Respond to the user
         await message.reply(
