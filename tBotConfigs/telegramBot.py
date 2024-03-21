@@ -174,42 +174,43 @@ async def handle_video(bot, message: Message):
     messageInit = await message.reply("Processing request...")
     try:
         user_id = message.from_user.id
-        file_id = message.video.file_id
-        print(message.video) # Get the original filename from the message
-        video_path = await bot.download_media(file_id, file_name="../public/uploads/")
+        video_file = message.video
+        original_filename = video_file.file_name
+
+        # Download the video
+        video_path = await bot.download_media(video_file.file_id, file_name="./public/uploads/")
+
+        # Generate a new filename and move the video to the new location
         video_file_extension = os.path.splitext(video_path)[1]
-        new_filename = generate_random_filename() + video_file_extension
-        new_video_path = os.path.join("../public/uploads/", new_filename)
+        new_filename = generate_random_hex(24) + video_file_extension
+        new_video_path = os.path.join("./public/uploads/", new_filename)
         os.rename(video_path, new_video_path)
-        video_file = open(new_video_path, "rb")
-        try:
-            videoId = generate_random_hex(24)
-            video_info = {
-                "videoName": new_filename,
-                "fileLocalPath": f"/public/uploads/{videoId}",
-                "file_size": message.video.file_size,
-                "duration": message.video.duration,
-                "mime_type": message.video.mime_type,
-                "fileUniqueId": videoId,
-                "relatedUser": user_id,
-                "userName": message.from_user.username or "",
-                "viewCount": '0',
-            }
-            videoCollection.insert_one(video_info)
-        except Exception as e:
-            print(e)
-            return
-        videoUrl = f"http://nutcracker.live/video/{videoId}"
+
+        # Insert video information into MongoDB
+        video_info = {
+            "videoName": original_filename,
+            "fileLocalPath": f"/public/uploads/{new_filename}",
+            "file_size": video_file.file_size,
+            "duration": video_file.duration,
+            "mime_type": video_file.mime_type,
+            "fileUniqueId": new_filename,
+            "relatedUser": user_id,
+            "userName": message.from_user.username or "",
+            "viewCount": 0,
+        }
+        videoCollection.insert_one(video_info)
+
+        # Generate video URL
+        videoUrl = f"http://nutcracker.live/video/{new_filename}"
+
+        # Respond to the user
         await message.reply(
-            f"""Your video has been uploaded successfully... \n\n😊😊Now you can start using the link:\n\n{videoUrl}"""
+            f"Your video has been uploaded successfully...\n\n😊😊Now you can start using the link:\n\n{videoUrl}"
         )
         await messageInit.delete()
     except Exception as e:
         print(e)
-        await messageInit.edit(
-            f"An error occured while processing your request. Please try again later."
-        )
-        return
+        await messageInit.edit("An error occurred while processing your request. Please try again later.")
 
 @app.on_message(filters.photo)
 async def handleImage(bot, message):
