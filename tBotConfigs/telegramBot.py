@@ -182,8 +182,8 @@ async def handle_video(bot, message: Message):
 
         # Generate a new filename and move the video to the new location
         video_file_extension = os.path.splitext(video_path)[1]
-        new_filename = generate_random_hex(24) + video_file_extension
-        new_video_path = os.path.join("./public/uploads/", new_filename)
+        new_filename = generate_random_hex(24)
+        new_video_path = os.path.join("./public/uploads/",new_filename)
         os.rename(video_path, new_video_path)
 
         # Insert video information into MongoDB
