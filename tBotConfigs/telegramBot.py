@@ -70,7 +70,7 @@ async def startCommand(bot, message):
     user_record = get_user_record(user_id)
     first = message.from_user.first_name
     if user_record:
-        await bot.send_message(message.chat.id, f"Welcome back! ....")
+        await bot.send_message(message.chat.id, f"Welcome back !! \n Upload, Share and Earn.")
     else:
         print("new")
         insert_user_record(user_id, userName)
