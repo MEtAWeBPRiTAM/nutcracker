@@ -1,5 +1,4 @@
-require = require('esm')(module);
-const { MongoClient } = require('mongodb');
+import { MongoClient } from 'mongodb';
 const fetch = require('node-fetch'); // for making HTTP requests
 
 async function setupChangeStream() {
