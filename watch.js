@@ -2,6 +2,8 @@ const chokidar = require('chokidar');
 const { exec } = require('child_process');
 
 const uploadDir = './public/uploads';
+const nginxRestartCommand = 'sudo service nginx restart'; // Command to restart Nginx
+const nextJsRestartCommand = 'sudo systemctl restart nutcrakcer'; // Command to restart Next.js server
 
 // Initialize watcher to monitor uploads directory
 const watcher = chokidar.watch(uploadDir, {
@@ -22,11 +24,19 @@ watcher
 // Function to restart the server
 function restartServer() {
   console.log('Restarting server...');
-  exec('npm start', (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Server restart failed: ${error}`);
+  exec(nginxRestartCommand, (nginxError, nginxStdout, nginxStderr) => {
+    if (nginxError) {
+      console.error(`Nginx restart failed: ${nginxError}`);
       return;
     }
-    console.log(`Server restarted successfully: ${stdout}`);
+    console.log(`Nginx restarted successfully: ${nginxStdout}`);
+    
+    exec(nextJsRestartCommand, (nextJsError, nextJsStdout, nextJsStderr) => {
+      if (nextJsError) {
+        console.error(`Next.js server restart failed: ${nextJsError}`);
+        return;
+      }
+      console.log(`Next.js server restarted successfully: ${nextJsStdout}`);
+    });
   });
 }
