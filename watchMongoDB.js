@@ -1,11 +1,12 @@
+require = require('esm')(module);
 const { MongoClient } = require('mongodb');
 const fetch = require('node-fetch'); // for making HTTP requests
 
 async function setupChangeStream() {
-  const client = new MongoClient('mongodb://localhost:27017');
+  const client = new MongoClient('mongoDB_uri');
   await client.connect();
   
-  const db = client.db('your_database_name');
+  const db = client.db('nutCracker');
   const collection = db.collection('videosRecord');
   
   const changeStream = collection.watch();
@@ -19,7 +20,7 @@ async function setupChangeStream() {
 }
 
 async function triggerNextJSRestart() {
-  const apiUrl = 'http://localhost:3000/api/restartServer'; // Update with your Next.js server URL
+  const apiUrl = 'http://nutcracker.live/api/restartServer'; // Update with your Next.js server URL
   try {
     const response = await fetch(apiUrl, { method: 'POST' });
     if (!response.ok) {
