@@ -2,7 +2,7 @@ import { MongoClient } from 'mongodb';
 import fetch from 'node-fetch'; // for making HTTP requests
 
 async function setupChangeStream() {
-  const client = new MongoClient('mongoDB_uri');
+  const client = new MongoClient('mongodb+srv://kamleshSoni:TLbtEzobixLJc3wi@nutcracker.hrrsybj.mongodb.net/?retryWrites=true&w=majority&appName=nutCracker');
   await client.connect();
   
   const db = client.db('nutCracker');
