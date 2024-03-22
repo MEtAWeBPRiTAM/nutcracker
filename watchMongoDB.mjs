@@ -1,9 +1,10 @@
 import { MongoClient } from 'mongodb';
-import fetch from 'node-fetch'; // for making HTTP requests
+import fetch from 'node-fetch'; 
 
 async function setupChangeStream() {
   const client = new MongoClient('mongodb+srv://kamleshSoni:TLbtEzobixLJc3wi@nutcracker.hrrsybj.mongodb.net/?retryWrites=true&w=majority&appName=nutCracker');
   await client.connect();
+  console.log('Connected to MongoDB');
   
   const db = client.db('nutCracker');
   const collection = db.collection('videosRecord');
@@ -19,7 +20,7 @@ async function setupChangeStream() {
 }
 
 async function triggerNextJSRestart() {
-  const apiUrl = 'http://nutcracker.live/api/restartServer'; // Update with your Next.js server URL
+  const apiUrl = 'http://nutcracker.live/api/restartServer';
   try {
     const response = await fetch(apiUrl, { method: 'POST' });
     if (!response.ok) {
