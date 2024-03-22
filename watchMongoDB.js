@@ -1,5 +1,5 @@
 import { MongoClient } from 'mongodb';
-const fetch = require('node-fetch'); // for making HTTP requests
+import fetch from 'node-fetch'; // for making HTTP requests
 
 async function setupChangeStream() {
   const client = new MongoClient('mongoDB_uri');
