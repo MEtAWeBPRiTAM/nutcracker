@@ -1,30 +1,32 @@
-const fs = require('fs');
+const chokidar = require('chokidar');
 const { exec } = require('child_process');
 
-const watchDirectory = './public/uploads';
+const uploadDir = './public/uploads';
 
-fs.watch(watchDirectory, (eventType, filename) => {
-  console.log(`Event type: ${eventType}`);
-  if (filename) {
-    console.log(`File ${filename} has been ${eventType}`);
-    // Restart the server here
-    restartServer();
-  } else {
-    console.log('No filename provided');
-  }
+// Initialize watcher to monitor uploads directory
+const watcher = chokidar.watch(uploadDir, {
+  ignored: /^\./, // ignore dotfiles
+  persistent: true
 });
 
+// Add event listeners
+watcher
+  .on('add', (path) => {
+    console.log(`File ${path} has been added`);
+    restartServer();
+  })
+  .on('error', (error) => {
+    console.error(`Watcher error: ${error}`);
+  });
+
+// Function to restart the server
 function restartServer() {
   console.log('Restarting server...');
-  exec('npm run dev', (error, stdout, stderr) => {
+  exec('npm start', (error, stdout, stderr) => {
     if (error) {
-      console.error(`Error: ${error.message}`);
+      console.error(`Server restart failed: ${error}`);
       return;
     }
-    if (stderr) {
-      console.error(`Stderr: ${stderr}`);
-      return;
-    }
-    console.log(`Server restarted successfully`);
+    console.log(`Server restarted successfully: ${stdout}`);
   });
 }
