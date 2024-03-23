@@ -1,9 +1,9 @@
 const chokidar = require('chokidar');
 const { exec } = require('child_process');
 
-const uploadDir = './public/uploads';
+const uploadDir = '../../public/uploads';
 const nginxRestartCommand = 'sudo service nginx restart'; // Command to restart Nginx
-const nextJsRestartCommand = 'sudo systemctl restart nutcrakcer'; // Command to restart Next.js server
+const nextJsRestartCommand = 'sudo systemctl restart nutcracker'; // Command to restart Next.js server
 
 // Initialize watcher to monitor uploads directory
 const watcher = chokidar.watch(uploadDir, {
