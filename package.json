@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "nodemon watch.js --exec \"next dev\"",
+    "dev": "nodemon watch.js --exec",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
