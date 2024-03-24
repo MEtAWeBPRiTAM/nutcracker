@@ -1,42 +1,30 @@
 const chokidar = require('chokidar');
 const { exec } = require('child_process');
 
-const uploadDir = './public/uploads';
-const nginxRestartCommand = 'sudo service nginx restart'; // Command to restart Nginx
-const nextJsRestartCommand = 'sudo systemctl restart nutcracker'; // Command to restart Next.js server
+const directoryToWatch = './public/uploads';
+const commandToRestartServer = 'pm2 restart nutcracker';
 
-// Initialize watcher to monitor uploads directory
-const watcher = chokidar.watch(uploadDir, {
-  ignored: /^\./, // ignore dotfiles
+const watcher = chokidar.watch(directoryToWatch, {
+  ignored: /(^|[\/\\])\../, // ignore dotfiles
   persistent: true
 });
 
-// Add event listeners
 watcher
-  .on('add', (path) => {
+  .on('add', path => {
     console.log(`File ${path} has been added`);
     restartServer();
   })
-  .on('error', (error) => {
-    console.error(`Watcher error: ${error}`);
+  .on('change', path => {
+    console.log(`File ${path} has been changed`);
+    restartServer();
   });
 
-// Function to restart the server
 function restartServer() {
-  console.log('Restarting server...');
-  exec(nginxRestartCommand, (nginxError, nginxStdout, nginxStderr) => {
-    if (nginxError) {
-      console.error(`Nginx restart failed: ${nginxError}`);
+  exec(commandToRestartServer, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error executing command: ${error}`);
       return;
     }
-    console.log(`Nginx restarted successfully: ${nginxStdout}`);
-    
-    exec(nextJsRestartCommand, (nextJsError, nextJsStdout, nextJsStderr) => {
-      if (nextJsError) {
-        console.error(`Next.js server restart failed: ${nextJsError}`);
-        return;
-      }
-      console.log(`Next.js server restarted successfully: ${nextJsStdout}`);
-    });
+    console.log(`Server restarted successfully`);
   });
 }
