@@ -2,7 +2,7 @@ const chokidar = require('chokidar');
 const { exec } = require('child_process');
 
 const directoryToWatch = './public/uploads/';
-const commandToRestartServer = 'pm2 restart nutcracker';
+const commandToRestartServer = 'pm2 restart 9';
 
 const watcher = chokidar.watch(directoryToWatch, {
   ignored: /(^|[\/\\])\../, // ignore dotfiles
