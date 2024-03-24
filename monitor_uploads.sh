@@ -4,7 +4,7 @@
 UPLOADS_DIR="./public/uploads"
 
 # Check if Next.js application is running
-if pgrep -f "node .*next" > /start/null; then
+if pgrep -f "node .*next" > /dev/null; then
     echo "Next.js application is running."
 else
     echo "Next.js application is not running. Exiting..."
