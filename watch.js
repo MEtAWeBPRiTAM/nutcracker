@@ -21,6 +21,7 @@ watcher
 
 function restartServer() {
   exec(commandToRestartServer, (error, stdout, stderr) => {
+  console.log("Trying to restart");
     if (error) {
       console.error(`Error executing command: ${error}`);
       return;
