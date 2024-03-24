@@ -1,7 +1,7 @@
 const chokidar = require('chokidar');
 const { exec } = require('child_process');
 
-const directoryToWatch = './public/uploads';
+const directoryToWatch = './public/uploads/';
 const commandToRestartServer = 'pm2 restart nutcracker';
 
 const watcher = chokidar.watch(directoryToWatch, {
