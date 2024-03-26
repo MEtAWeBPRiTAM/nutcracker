@@ -26,6 +26,7 @@ function restartServer() {
     console.log("Trying to restart");
     if (error) {
       console.error(`Error executing command: ${error}`);
+      console.log(`Error executing command: ${error}`);
       return;
     }
     console.log(`Server restarted successfully`);
