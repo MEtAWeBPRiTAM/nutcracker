@@ -11,14 +11,15 @@ const watcher = chokidar.watch(directoryToWatch, {
   persistent: true
 });
 
-watcher.on('add', path => {
+watcher
+.on('add', path => {
   console.log(`File ${path} has been added`);
   restartServer();
+})
+.on('change', path => {
+  console.log(`File ${path} has been changed`);
+  restartServer();
 });
-// .on('change', path => {
-//   console.log(`File ${path} has been changed`);
-//   restartServer();
-// });
 
 function restartServer() {
   exec(commandToRestartServer, commandToRestartServer2, commandToRestartServer3, (error, stdout, stderr) => {
