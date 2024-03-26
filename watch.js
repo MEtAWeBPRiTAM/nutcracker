@@ -14,10 +14,10 @@ watcher
     console.log(`File ${path} has been added`);
     restartServer();
   })
-  .on('change', path => {
-    console.log(`File ${path} has been changed`);
-    restartServer();
-  });
+  // .on('change', path => {
+  //   console.log(`File ${path} has been changed`);
+  //   restartServer();
+  // });
 
 function restartServer() {
   exec(commandToRestartServer, (error, stdout, stderr) => {
