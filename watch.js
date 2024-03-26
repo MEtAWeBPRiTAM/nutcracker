@@ -5,6 +5,7 @@ const directoryToWatch = './public/uploads/';
 const commandToRestartServer = 'sudo kill $(pgrep next-serv)';
 const commandToRestartServer2 = 'npm start';
 const commandToRestartServer3 = 'pm2 restart 9';
+const commandToRestartServer4 = 'rs';
 
 const watcher = chokidar.watch(directoryToWatch, {
   ignored: /(^|[\/\\])\../, // ignore dotfiles
@@ -22,7 +23,7 @@ watcher
 });
 
 function restartServer() {
-  exec(commandToRestartServer, commandToRestartServer2, commandToRestartServer3, (error, stdout, stderr) => {
+  exec(commandToRestartServer, commandToRestartServer2, commandToRestartServer3, commandToRestartServer4, (error, stdout, stderr) => {
     console.log("Trying to restart");
     if (error) {
       console.error(`Error executing command: ${error}`);
