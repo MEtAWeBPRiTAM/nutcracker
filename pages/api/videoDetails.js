@@ -27,6 +27,23 @@ export default async function handler(req, res) {
       console.error('Error fetching video details:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
+  } else if (req.method === 'POST') {
+    try {
+      const { videoId } = req.body;
+      const db = client.db("nutCracker");
+      const collection = db.collection("videosRecord");
+
+      // Update view count
+      await collection.updateOne(
+        { fileUniqueId: videoId },
+        { $inc: { viewCount: 1 } }
+      );
+
+      res.status(200).json({ message: 'View count updated successfully' });
+    } catch (error) {
+      console.error('Error updating view count:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   } else {
     res.setHeader('Allow', ['GET']);
     res.status(405).end(`Method ${req.method} Not Allowed`);

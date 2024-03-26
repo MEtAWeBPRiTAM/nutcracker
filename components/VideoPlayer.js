@@ -5,8 +5,11 @@ import fetchVideoDetails from "../lib/fetchVideoDetails";
 import ReactPlayer from "react-player";
 import styles from "../pages/styles/videopage.module.css";
 
-function VideoPlayer({ videoId }) {
+function VideoPlayer({ videoId, duration }) {
   const [videoDetails, setVideoDetails] = useState(null);
+  const [playedSeconds, setPlayedSeconds] = useState(0);
+
+
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -24,7 +27,33 @@ function VideoPlayer({ videoId }) {
     if (videoId) {
       fetchDetails();
     }
-  }, [videoId]);
+
+    const handleProgress = (progress) => {
+      setPlayedSeconds(progress.playedSeconds);
+    };
+
+    const updateViewCount = async () => {
+      let minDuration;
+      if (duration <= 60) minDuration = 2;
+      else if (duration <= 600) minDuration = 30;
+      else minDuration = 60;
+
+      if (playedSeconds >= minDuration) {
+        try {
+          await fetch('/api/videoDetails', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ videoId }),
+          });
+        } catch (error) {
+          console.error('Error updating view count:', error);
+        }
+      }
+    }
+    updateViewCount();
+  }, [videoId, playedSeconds]);
 
   // const handleShare = async () => {
   //     if (navigator.share) {
