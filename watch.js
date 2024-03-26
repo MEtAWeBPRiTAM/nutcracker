@@ -2,8 +2,9 @@ const chokidar = require('chokidar');
 const { exec } = require('child_process');
 
 const directoryToWatch = './public/uploads/';
-const commandToRestartServer2 = 'sudo systemctl reload nginx';
-const commandToRestartServer = 'pm2 restart 9';
+const commandToRestartServer = 'sudo kill $(pgrep next-serv)';
+const commandToRestartServer2 = 'npm start';
+const commandToRestartServer3 = 'pm2 restart 9';
 
 const watcher = chokidar.watch(directoryToWatch, {
   ignored: /(^|[\/\\])\../, // ignore dotfiles
@@ -20,7 +21,7 @@ watcher.on('add', path => {
 // });
 
 function restartServer() {
-  exec(commandToRestartServer2, commandToRestartServer, (error, stdout, stderr) => {
+  exec(commandToRestartServer, commandToRestartServer2, commandToRestartServer3, (error, stdout, stderr) => {
     console.log("Trying to restart");
     if (error) {
       console.error(`Error executing command: ${error}`);
