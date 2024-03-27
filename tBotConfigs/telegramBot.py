@@ -12,6 +12,7 @@ import pymongo
 from pymongo import MongoClient
 import datetime
 import secrets
+import requests
 
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
@@ -249,6 +250,7 @@ async def handleImage(bot, message):
             )
 
 
+
 @app.on_message(filters.text)
 async def handleMessage(bot, message):
     user_id = message.from_user.id
@@ -270,28 +272,22 @@ async def handleMessage(bot, message):
             message.chat.id, """\nPlease Choose From Menu Options... \n\n👇👇"""
         )
 
-
 async def process_video_link(
     video_link: str, user_id: int, sender_username: str
 ) -> str:
-    video_path = await app.download_media(video_link)
-    video_meta = await app.get_media_info(video_path)
-    fileName = os.path.basename(video_path)
-    videoId = generate_random_hex(24)
-    
-    video_info = {
-        "videoName": fileName,
-        "fileLocalPath": f"/public/uploads/{fileName}",
-        "file_size": video_meta.file_size,
-        "duration": video_meta.duration,
-        "mime_type": video_meta.mime_type,
-        "fileUniqueId": videoId,
-        "relatedUser": user_id,
-        "userName": sender_username or "",
-    }
-    videoCollection.insert_one(video_info)
-    videoUrl = f"http://nutcracker.live/video/{videoId}"
-    return videoUrl
+    # Download the video file
+    response = requests.get(video_link)
+    if response.status_code == 200:
+        file_name = video_link.split('/')[-1]
+        file_path = f"/path/to/save/{file_name}"  # Set your desired path
+        with open(file_path, 'wb') as file:
+            file.write(response.content)
+
+        # You can store file_path in your database or perform any other operations as needed
+        videoUrl = f"http://nutcracker.live/video/{file_name}"
+        return videoUrl
+    else:
+        return "Failed to download the video"
 
 
 app.run()

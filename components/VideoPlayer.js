@@ -5,55 +5,26 @@ import fetchVideoDetails from "../lib/fetchVideoDetails";
 import ReactPlayer from "react-player";
 import styles from "../pages/styles/videopage.module.css";
 
-function VideoPlayer({ videoId, duration }) {
+function VideoPlayer({ videoId }) {
   const [videoDetails, setVideoDetails] = useState(null);
-  const [playedSeconds, setPlayedSeconds] = useState(0);
-
-
 
   useEffect(() => {
     const fetchDetails = async () => {
       try {
         const data = await fetchVideoDetails(videoId);
         setVideoDetails(data);
-        console.log(setVideoDetails);
-        console.log(data);
+        // console.log(setVideoDetails);
+        // console.log(data);
       } catch (error) {
         console.error("Error fetching video details:", error);
-        console.log("Error fetching video details:", error);
+        // console.log("Error fetching video details:", error);
       }
     };
 
     if (videoId) {
       fetchDetails();
     }
-
-    const handleProgress = (progress) => {
-      setPlayedSeconds(progress.playedSeconds);
-    };
-
-    const updateViewCount = async () => {
-      let minDuration;
-      if (duration <= 60) minDuration = 2;
-      else if (duration <= 600) minDuration = 30;
-      else minDuration = 60;
-
-      if (playedSeconds >= minDuration) {
-        try {
-          await fetch('/api/videoDetails', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ videoId }),
-          });
-        } catch (error) {
-          console.error('Error updating view count:', error);
-        }
-      }
-    }
-    updateViewCount();
-  }, [videoId, playedSeconds]);
+  }, [videoId]);
 
   // const handleShare = async () => {
   //     if (navigator.share) {
@@ -106,7 +77,7 @@ function VideoPlayer({ videoId, duration }) {
   }
 
   const videoUrl = `/uploads/${videoDetails.videoName}`;
-  console.log(videoUrl);
+  // console.log(videoUrl);
 
   return (
     <div>
