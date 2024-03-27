@@ -7,7 +7,7 @@ import re
 import asyncio
 import uvloop  # Correct import statement
 from pyrogram import Client, filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ChatAction
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 import pymongo
 from pymongo import MongoClient
 import datetime
@@ -259,7 +259,7 @@ async def handleMessage(bot, message):
         messageInit = await bot.send_message(
             message.chat.id, "Processing request... 👍"
         )
-        await bot.send_chat_action(message.chat.id, ChatAction.TYPING)
+        await bot.send_chat_action(message.chat.id, "typing")
         for video_link in video_links:
             unique_link = await process_video_link(video_link, user_id, sender_username)
             await message.reply(
