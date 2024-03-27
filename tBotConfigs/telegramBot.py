@@ -279,7 +279,7 @@ async def process_video_link(
     response = requests.get(video_link)
     if response.status_code == 200:
         file_name = video_link.split('/')[-1]
-        file_path = f"/path/to/save/{file_name}"  # Set your desired path
+        file_path = f"../public/uploads/{file_name}"  # Set your desired path
         with open(file_path, 'wb') as file:
             file.write(response.content)
 
