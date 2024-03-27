@@ -7,7 +7,7 @@ import re
 import asyncio
 import uvloop  # Correct import statement
 from pyrogram import Client, filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ChatAction
 import pymongo
 from pymongo import MongoClient
 import datetime
@@ -250,7 +250,6 @@ async def handleImage(bot, message):
             )
 
 
-
 @app.on_message(filters.text)
 async def handleMessage(bot, message):
     user_id = message.from_user.id
@@ -260,7 +259,7 @@ async def handleMessage(bot, message):
         messageInit = await bot.send_message(
             message.chat.id, "Processing request... 👍"
         )
-        await bot.send_chat_action(message.chat.id, "typing")
+        await bot.send_chat_action(message.chat.id, ChatAction.TYPING)
         for video_link in video_links:
             unique_link = await process_video_link(video_link, user_id, sender_username)
             await message.reply(
@@ -272,22 +271,28 @@ async def handleMessage(bot, message):
             message.chat.id, """\nPlease Choose From Menu Options... \n\n👇👇"""
         )
 
+
 async def process_video_link(
     video_link: str, user_id: int, sender_username: str
 ) -> str:
-    # Download the video file
-    response = requests.get(video_link)
-    if response.status_code == 200:
-        file_name = video_link.split('/')[-1]
-        file_path = f"../public/uploads/{file_name}"  # Set your desired path
-        with open(file_path, 'wb') as file:
-            file.write(response.content)
-
-        # You can store file_path in your database or perform any other operations as needed
-        videoUrl = f"http://nutcracker.live/video/{file_name}"
-        return videoUrl
-    else:
-        return "Failed to download the video"
+    video_path = await app.download_media(video_link)
+    video_meta = await app.get_media_info(video_path)
+    fileName = os.path.basename(video_path)
+    videoId = generate_random_hex(24)
+    
+    video_info = {
+        "videoName": fileName,
+        "fileLocalPath": f"/public/uploads/{fileName}",
+        "file_size": video_meta.file_size,
+        "duration": video_meta.duration,
+        "mime_type": video_meta.mime_type,
+        "fileUniqueId": videoId,
+        "relatedUser": user_id,
+        "userName": sender_username or "",
+    }
+    videoCollection.insert_one(video_info)
+    videoUrl = f"http://nutcracker.live/video/{videoId}"
+    return videoUrl
 
 
 app.run()
