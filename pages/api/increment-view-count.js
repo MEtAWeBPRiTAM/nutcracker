@@ -9,6 +9,7 @@ export default async function handler(req, res) {
 
       // Validate videoIdz
       if (!videoId) {
+        console.log("VErr");
         return res.status(400).json({ error: "Video ID is required" });
       }
 
@@ -26,6 +27,7 @@ export default async function handler(req, res) {
       }
 
       res.status(200).json({ success: true });
+      console.log("vSucc");
 
       
     } catch (error) {
