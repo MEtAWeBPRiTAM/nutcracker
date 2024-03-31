@@ -1,3 +1,5 @@
+// components/VideoPlayer.js
+
 import { useEffect, useState } from "react";
 import fetchVideoDetails from "../lib/fetchVideoDetails";
 import ReactPlayer from "react-player";
@@ -11,37 +13,29 @@ function VideoPlayer({ videoId }) {
       try {
         const data = await fetchVideoDetails(videoId);
         setVideoDetails(data);
-        await incrementViewCount(videoId); // Increment view count when component mounts
       } catch (error) {
         console.error("Error fetching video details:", error);
       }
     };
 
-    const incrementViewCount = async ({ videoId }) => {
-      try {
-        const response = await fetch("/api/incrementViewCount", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ videoId }),
-        });
-  
-        if (!response.ok) {
-          throw new Error("Failed to increment view count");
-        }
-      } catch (error) {
-        console.error("Error incrementing view count:", error);
-      }
-    };
-
     if (videoId) {
       fetchDetails();
-      incrementViewCount();
     }
   }, [videoId]);
 
-
+  const handleVideoPlay = async () => {
+    try {
+      await fetch("/api/incrementViewCount", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ videoId }),
+      });
+    } catch (error) {
+      console.error("Error incrementing view count:", error);
+    }
+  };
 
   if (!videoDetails) {
     return <div>Loading...</div>;
@@ -63,6 +57,7 @@ function VideoPlayer({ videoId }) {
               controls={true}
               width="100%"
               height="100%"
+              onStart={handleVideoPlay} // Call handleVideoPlay when the video starts playing
             />
           </div>
           <div className={styles.shareButton}>
