@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import fetchVideoDetails from "../lib/fetchVideoDetails";
-import ReactPlayer from "react-player";
+import React from 'react';
+import ReactPlayer from 'react-player/lazy';
 import styles from "../pages/styles/videopage.module.css";
 
 function VideoPlayer({ videoId }) {
   const [videoDetails, setVideoDetails] = useState(null);
+  const [ playState, setPlayState ] = useState(false);
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -23,7 +25,19 @@ function VideoPlayer({ videoId }) {
     }
   }, [videoId]);
 
-  var kkk = "entered";
+  const handleVideoPlay = async () => {
+    try {
+      await fetch("/api/incrementViewCount", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ videoId }),
+      });
+    } catch (error) {
+      console.error("Error incrementing view count:", error);
+    }
+  };
 
   if (!videoDetails) {
     return <div>Loading...</div>;
@@ -45,7 +59,8 @@ function VideoPlayer({ videoId }) {
               controls={true}
               width="100%"
               height="100%"
-              onPlay={console.log(kkk)}
+              playing={playState}
+              onPlay={handleVideoPlay}
             />
           </div>
           <div className={styles.shareButton}>
