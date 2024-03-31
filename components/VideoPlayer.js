@@ -17,28 +17,31 @@ function VideoPlayer({ videoId }) {
       }
     };
 
+    const incrementViewCount = async ({ videoId }) => {
+      try {
+        const response = await fetch("../pages/api/incrementViewCount", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ videoId }),
+        });
+  
+        if (!response.ok) {
+          throw new Error("Failed to increment view count");
+        }
+      } catch (error) {
+        console.error("Error incrementing view count:", error);
+      }
+    };
+
     if (videoId) {
       fetchDetails();
+      incrementViewCount();
     }
   }, [videoId]);
 
-  const incrementViewCount = async ({ videoId }) => {
-    try {
-      const response = await fetch("../pages/api/incrementViewCount", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ videoId }),
-      });
 
-      if (!response.ok) {
-        throw new Error("Failed to increment view count");
-      }
-    } catch (error) {
-      console.error("Error incrementing view count:", error);
-    }
-  };
 
   if (!videoDetails) {
     return <div>Loading...</div>;
