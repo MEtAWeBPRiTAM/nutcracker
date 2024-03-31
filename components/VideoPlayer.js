@@ -23,19 +23,6 @@ function VideoPlayer({ videoId }) {
     }
   }, [videoId]);
 
-  const handleVideoPlay = async () => {
-    try {
-      await fetch("/api/incrementViewCount", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ videoId }),
-      });
-    } catch (error) {
-      console.error("Error incrementing view count:", error);
-    }
-  };
 
   if (!videoDetails) {
     return <div>Loading...</div>;
@@ -57,7 +44,6 @@ function VideoPlayer({ videoId }) {
               controls={true}
               width="100%"
               height="100%"
-              onStart={handleVideoPlay} // Call handleVideoPlay when the video starts playing
             />
           </div>
           <div className={styles.shareButton}>
