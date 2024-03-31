@@ -194,7 +194,7 @@ async def handle_video(bot, message: Message):
                 "fileUniqueId": videoId,
                 "relatedUser": user_id,
                 "userName": message.from_user.username or "",
-                "viewCount": '0',
+                "viewCount": 0,
             }
             videoCollection.insert_one(video_info)
         except Exception as e:
