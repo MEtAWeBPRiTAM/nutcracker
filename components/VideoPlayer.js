@@ -23,10 +23,7 @@ function VideoPlayer({ videoId }) {
     }
   }, [videoId]);
 
-  const consoles = async () =>  {
-     resp = "Entered";
-     await console.log(resp);
-  };
+  var kkk = "entered";
 
   if (!videoDetails) {
     return <div>Loading...</div>;
@@ -48,7 +45,7 @@ function VideoPlayer({ videoId }) {
               controls={true}
               width="100%"
               height="100%"
-              onPlay={consoles}
+              onPlay={console.log(kkk)}
             />
           </div>
           <div className={styles.shareButton}>
