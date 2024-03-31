@@ -60,7 +60,7 @@ function VideoPlayer({ videoId }) {
               controls={true}
               width="100%"
               height="100%"
-              onPlay={handleVideoPlay} // Call handleVideoPlay when the video starts playing
+              onStart={handleVideoPlay} // Call handleVideoPlay when the video starts playing
             />
           </div>
           <div className={styles.shareButton}>
