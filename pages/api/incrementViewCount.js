@@ -5,7 +5,10 @@ import client from '../../lib/db';
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
+      console.log("Received increment view count request.");
       const { videoId } = req.body;
+
+      console.log("Video ID:", videoId);
 
       const db = client.db("nutCracker");
       const collection = db.collection("videosRecord");
@@ -15,6 +18,8 @@ export default async function handler(req, res) {
         { fileUniqueId: videoId },
         { $inc: { viewCount: 1 } } // Increment viewCount by 1
       );
+
+      console.log("Result:", result);
 
       if (result.modifiedCount === 1) {
         res.status(200).json({ message: 'View count updated successfully' });

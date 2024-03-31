@@ -25,6 +25,7 @@ function VideoPlayer({ videoId }) {
 
   const handleVideoPlay = async () => {
     try {
+      console.log("Incrementing view count...");
       await fetch("/api/incrementViewCount", {
         method: "POST",
         headers: {
@@ -32,10 +33,12 @@ function VideoPlayer({ videoId }) {
         },
         body: JSON.stringify({ videoId }),
       });
+      console.log("View count incremented successfully.");
     } catch (error) {
       console.error("Error incrementing view count:", error);
     }
   };
+  
 
   if (!videoDetails) {
     return <div>Loading...</div>;
