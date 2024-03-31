@@ -22,7 +22,7 @@ function VideoPlayer({ videoId }) {
     }
   }, [videoId]);
 
-  const incrementViewCount = async (videoId) => {
+  const incrementViewCount = async ({ videoId }) => {
     try {
       const response = await fetch("/api/incrementViewCount", {
         method: "POST",
