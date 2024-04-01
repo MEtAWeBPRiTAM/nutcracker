@@ -24,7 +24,7 @@ client = MongoClient(MONGO_URI)
 db = client["nutCracker"]
 videoCollection = db["videosRecord"]
 userCollection = db["userRecord"]
-
+conversation_state = {}
 # Initialize Telegram bot
 videoConverterToken = os.getenv("bot1Token")
 API_ID = os.getenv("api_id")
@@ -150,6 +150,17 @@ async def handleImage(bot, message):
             )
 
 
+
+@app.on_message(filters.command("titlerename"))
+async def titleRename(bot, message):
+    # Set conversation state to 'awaiting_video_id' for the current chat
+    conversation_state[message.chat.id] = {'state': 'awaiting_video_id'}
+
+    # Send a message requesting the video ID
+    await bot.send_message(
+        message.chat.id, "Please enter the video ID (fileUniqueId):"
+    )
+
 @app.on_message(filters.command("titlerename"))
 async def titleRename(bot, message):
     # Check if the command is triggered via the menu button
@@ -190,6 +201,53 @@ async def titleRename(bot, message):
 
 @app.on_message(filters.text)
 async def handleMessage(bot, message):
+ chat_id = message.chat.id
+ if chat_id in conversation_state:
+        state = conversation_state[chat_id].get('state')
+
+        if state == 'awaiting_video_id':
+            # Extract the video ID
+            video_id = message.text.strip()
+
+            # Check if the video ID is valid
+            video_info = videoCollection.find_one({"fileUniqueId": video_id})
+            if video_info is None:
+                await bot.send_message(
+                    chat_id, "No video found with the provided video ID."
+                )
+                return
+
+            # Update conversation state to 'awaiting_new_title'
+            conversation_state[chat_id]['state'] = 'awaiting_new_title'
+            # Store the video ID for later use
+            conversation_state[chat_id]['video_id'] = video_id
+
+            # Send a message requesting the new title
+            await bot.send_message(
+                chat_id, "Please provide the new title for the video:"
+            )
+
+        elif state == 'awaiting_new_title':
+            # Extract the new title
+            new_title = message.text.strip()
+
+            # Extract the video ID from conversation state
+            video_id = conversation_state[chat_id]['video_id']
+
+            # Update the title in the database
+            videoCollection.update_one(
+                {"fileUniqueId": video_id}, {"$set": {"videoName": new_title}}
+            )
+
+            # Remove conversation state for the current chat
+            del conversation_state[chat_id]
+
+            # Send a confirmation message
+            await bot.send_message(
+                chat_id,
+                f"The title of the video with ID '{video_id}' has been updated to '{new_title}'.",
+            )
+ else:        
     user_id = message.from_user.id
     sender_username = message.from_user.username
     video_links = re.findall(r"(https?://\S+)", message.text)
