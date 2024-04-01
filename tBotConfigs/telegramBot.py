@@ -4,7 +4,7 @@ import string
 import re
 import asyncio
 import uvloop
-from pyrogram import Client, filters
+from pyrogram import Client, filters , TgCrypto
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from dotenv import load_dotenv
 import pymongo
@@ -29,12 +29,31 @@ videoConverterToken = os.getenv("bot1Token")
 API_ID = os.getenv("api_id")
 API_HASH = os.getenv("api_hash")
 
-app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=videoConverterToken)
+app = app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=videoConverterToken, plugins=dict(root="plugins"), crypto=TgCrypto())
+
 
 def generate_random_hex(length):
     characters = "abcdef0123456789"
     random_hex = "".join(secrets.choice(characters) for _ in range(length))
     return random_hex
+
+def get_user_record(user_id):
+    userInformation = userCollection.find_one({"userId": user_id})
+    print(userInformation)
+    return userInformation
+
+def insert_user_record(user_id, userName):
+    userCollection.insert_one(
+        {
+            "userId": user_id,
+            "userName": userName,
+            "upiNumber": 0,
+            "uploadedVideos": 0,
+            "totalViews": 0,
+            "createdAt": datetime.datetime.now(),
+        }
+    )
+    return "Done! User record inserted successfully."
 
 def download_and_store_video(video_url, folder="../public/uploads/"):
     # Generate a unique filename
