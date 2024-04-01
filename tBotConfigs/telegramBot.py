@@ -4,7 +4,8 @@ import string
 import re
 import asyncio
 import uvloop
-from pyrogram import Client, filters , TgCrypto
+from pyrogram import Client, filters 
+from pyrogram.crypto import TgCrypto
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from dotenv import load_dotenv
 import pymongo
