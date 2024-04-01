@@ -30,7 +30,7 @@ videoConverterToken = os.getenv("bot1Token")
 API_ID = os.getenv("api_id")
 API_HASH = os.getenv("api_hash")
 
-app = app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=videoConverterToken, plugins=dict(root="plugins"), crypto=TgCrypto())
+app = app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=videoConverterToken)
 
 
 def generate_random_hex(length):
