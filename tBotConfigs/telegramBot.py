@@ -150,26 +150,6 @@ async def handleImage(bot, message):
             )
 
 
-@app.on_message(filters.text)
-async def handleMessage(bot, message):
-    user_id = message.from_user.id
-    sender_username = message.from_user.username
-    video_links = re.findall(r"(https?://\S+)", message.text)
-    if video_links:
-        messageInit = await bot.send_message(
-            message.chat.id, "Processing request... 👍"
-        )
-        for video_link in video_links:
-            unique_link = await process_video_link(video_link, user_id, sender_username)
-            await message.reply(
-                f"""Your video has been uploaded successfully... \n\n😊😊Now you can start using the link:\n\n{unique_link}"""
-            )
-        await messageInit.delete()
-    else:
-        await bot.send_message(
-            message.chat.id, """\nPlease Choose From Menu Options... \n\n👇👇"""
-        )
-
 @app.on_message(filters.command("titlerename"))
 async def titleRename(bot, message):
     # Check if the command is triggered via the menu button
@@ -206,6 +186,28 @@ async def titleRename(bot, message):
         message.chat.id,
         f"The title of the video with ID '{videoId}' has been updated to '{new_title}'.",
     )
+
+
+@app.on_message(filters.text)
+async def handleMessage(bot, message):
+    user_id = message.from_user.id
+    sender_username = message.from_user.username
+    video_links = re.findall(r"(https?://\S+)", message.text)
+    if video_links:
+        messageInit = await bot.send_message(
+            message.chat.id, "Processing request... 👍"
+        )
+        for video_link in video_links:
+            unique_link = await process_video_link(video_link, user_id, sender_username)
+            await message.reply(
+                f"""Your video has been uploaded successfully... \n\n😊😊Now you can start using the link:\n\n{unique_link}"""
+            )
+        await messageInit.delete()
+    else:
+        await bot.send_message(
+            message.chat.id, """\nPlease Choose From Menu Options... \n\n👇👇"""
+        )
+
 
 
 @app.on_message(filters.command("start"))
