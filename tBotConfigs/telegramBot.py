@@ -170,6 +170,44 @@ async def handleMessage(bot, message):
             message.chat.id, """\nPlease Choose From Menu Options... \n\n👇👇"""
         )
 
+@app.on_message(filters.command("titlerename"))
+async def titleRename(bot, message):
+    # Check if the command is triggered via the menu button
+    if message.text == "/titlerename":
+        await bot.send_message(
+            message.chat.id, "Please enter the video ID (fileUniqueId):"
+        )
+        return
+
+    # If the command is not triggered via the menu button, extract the video ID
+    args = message.text.split(maxsplit=1)
+    if len(args) < 2:
+        await bot.send_message(
+            message.chat.id, "Please provide the video ID along with the new title."
+        )
+        return
+
+    videoId, new_title = args[1].split(maxsplit=1)
+
+    # Get the user's uploaded video from the database
+    video_info = videoCollection.find_one({"fileUniqueId": videoId})
+    if video_info is None:
+        await bot.send_message(
+            message.chat.id, "No video found with the provided video ID."
+        )
+        return
+
+    # Update the title in the database
+    videoCollection.update_one(
+        {"fileUniqueId": videoId}, {"$set": {"videoName": new_title}}
+    )
+
+    await bot.send_message(
+        message.chat.id,
+        f"The title of the video with ID '{videoId}' has been updated to '{new_title}'.",
+    )
+
+
 @app.on_message(filters.command("start"))
 async def startCommand(bot, message):
     user_id = message.from_user.id
@@ -228,43 +266,6 @@ async def availableBots(bot, message):
 @app.on_message(filters.command("uploadfromdevice"))
 async def uploadFromDevice(bot, message):
     await bot.send_message(message.chat.id, f"""Start Uploading Your Video ...😉""")
-
-@app.on_message(filters.command("titlerename"))
-async def titleRename(bot, message):
-    # Check if the command is triggered via the menu button
-    if message.text == "/titlerename":
-        await bot.send_message(
-            message.chat.id, "Please enter the video ID (fileUniqueId):"
-        )
-        return
-
-    # If the command is not triggered via the menu button, extract the video ID
-    args = message.text.split(maxsplit=1)
-    if len(args) < 2:
-        await bot.send_message(
-            message.chat.id, "Please provide the video ID along with the new title."
-        )
-        return
-
-    videoId, new_title = args[1].split(maxsplit=1)
-
-    # Get the user's uploaded video from the database
-    video_info = videoCollection.find_one({"fileUniqueId": videoId})
-    if video_info is None:
-        await bot.send_message(
-            message.chat.id, "No video found with the provided video ID."
-        )
-        return
-
-    # Update the title in the database
-    videoCollection.update_one(
-        {"fileUniqueId": videoId}, {"$set": {"videoName": new_title}}
-    )
-
-    await bot.send_message(
-        message.chat.id,
-        f"The title of the video with ID '{videoId}' has been updated to '{new_title}'.",
-    )
 
 def generate_random_filename(length=10):
     letters = string.ascii_lowercase
