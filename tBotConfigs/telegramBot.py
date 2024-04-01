@@ -127,7 +127,7 @@ async def handleImage(bot, message):
             messageInit = await bot.send_message(
                 message.chat.id, "Processing request... 👍"
             )
-            await bot.send_chat_action(message.chat.id, "typing")
+            
             for video_link in video_links:
                 localFilePath = os.path.join(
                     f"../public/uploads", f"{os.path.basename(video_link)}"
@@ -159,7 +159,6 @@ async def handleMessage(bot, message):
         messageInit = await bot.send_message(
             message.chat.id, "Processing request... 👍"
         )
-        await bot.send_chat_action(message.chat.id, "typing")
         for video_link in video_links:
             unique_link = await process_video_link(video_link, user_id, sender_username)
             await message.reply(
