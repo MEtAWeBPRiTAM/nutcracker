@@ -1,13 +1,12 @@
-# Latest Script Update: 2021-07-20
 import os
 import random
 import string
-from dotenv import load_dotenv
 import re
 import asyncio
-import uvloop  # Correct import statement
+import uvloop
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from dotenv import load_dotenv
 import pymongo
 from pymongo import MongoClient
 import datetime
@@ -18,158 +17,39 @@ asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 load_dotenv()
 
+# Initialize MongoDB
 MONGO_URI = os.getenv("mongoDB_uri")
 client = MongoClient(MONGO_URI)
 db = client["nutCracker"]
 videoCollection = db["videosRecord"]
 userCollection = db["userRecord"]
-# textCollection = db["textRecord"]
 
+# Initialize Telegram bot
 videoConverterToken = os.getenv("bot1Token")
 API_ID = os.getenv("api_id")
 API_HASH = os.getenv("api_hash")
-# secondBotToken = os.getenv("bot2Token")
 
-# Initialize the Telegram bot
 app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=videoConverterToken)
-# app2 = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=secondBotToken)
-
-
-# Handle commands
-
 
 def generate_random_hex(length):
     characters = "abcdef0123456789"
     random_hex = "".join(secrets.choice(characters) for _ in range(length))
     return random_hex
 
+def download_and_store_video(video_url, folder="../public/uploads/"):
+    # Generate a unique filename
+    filename = generate_random_filename() + ".mp4"
+    filepath = os.path.join(folder, filename)
 
-def get_user_record(user_id):
-    userInformation = userCollection.find_one({"userId": user_id})
-    print(userInformation)
-    return userInformation
+    # Download the video
+    with requests.get(video_url, stream=True) as r:
+        r.raise_for_status()
+        with open(filepath, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+    return filepath
 
-
-def insert_user_record(user_id, userName):
-    userCollection.insert_one(
-        {
-            "userId": user_id,
-            "userName": userName,
-            "upiNumber": 0,
-            "uploadedVideos": 0,
-            "totalViews": 0,
-            "createdAt": datetime.datetime.now(),
-        }
-    )
-    return "Done! User record inserted successfully."
-
-
-@app.on_message(filters.command("start"))
-async def startCommand(bot, message):
-    user_id = message.from_user.id
-    userName = (message.from_user.username) or " "
-    user_record = get_user_record(user_id)
-    first = message.from_user.first_name
-    if user_record:
-        await bot.send_message(message.chat.id, f"Welcome back !! \n Upload, Share and Earn.")
-    else:
-        print("new")
-        insert_user_record(user_id, userName)
-        await bot.send_message(
-            message.chat.id,
-            f"Welcome! {first}\n\nWe're glad you're here.\nTo start using our platform\nYou can start sharing videos directly\n\n Note: If anything went wrong don't worry about it as we are on testing phase",
-        )
-
-
-@app.on_message(filters.command("getmyuserid"))
-async def getUserId(bot, message):
-    user_id = message.from_user.id
-    await bot.send_message(
-        message.chat.id, f"""Here is your 👤 user id:\n\n {user_id}"""
-    )
-
-
-@app.on_message(filters.command("myaccountsinfo"))
-async def getAccountInfo(bot, message):
-    await bot.send_message(
-        message.chat.id, f"We are under construction, please check back later.... 😊"
-    )
-
-
-@app.on_message(filters.command("availablebots"))
-async def availableBots(bot, message):
-    bot_list = [
-        (
-            """              nutcracker video convert bot.           """,
-            "https://t.me/nutcracker_video_convert_bot",
-        ),
-        (
-            """              NutCracker Link Convert Bot             """,
-            "https://t.me/NutCracker_Link_Convert_Bot",
-        ),
-        (
-            """              NutCracker Finance Bot             """,
-            "https://t.me/NutCracker_Finance_Bot",
-        ),
-    ]
-
-    keyboard = [[InlineKeyboardButton(bot[0], url=bot[1])] for bot in bot_list]
-
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await bot.send_message(
-        message.chat.id,
-        f"""        Available Bots: 👇👇         """,
-        reply_markup=reply_markup,
-    )
-
-
-@app.on_message(filters.command("uploadfromdevice"))
-async def uploadFromDevice(bot, message):
-    await bot.send_message(message.chat.id, f"""Start Uploading Your Video ...😉""")
-
-
-@app.on_message(filters.command("titlerename"))
-async def titleRename(bot, message):
-    # Check if the command is triggered via the menu button
-    if message.text == "/titlerename":
-        await bot.send_message(
-            message.chat.id, "Please enter the video ID (fileUniqueId):"
-        )
-        return
-
-    # If the command is not triggered via the menu button, extract the video ID
-    args = message.text.split(maxsplit=1)
-    if len(args) < 2:
-        await bot.send_message(
-            message.chat.id, "Please provide the video ID along with the new title."
-        )
-        return
-
-    videoId, new_title = args[1].split(maxsplit=1)
-
-    # Get the user's uploaded video from the database
-    video_info = videoCollection.find_one({"fileUniqueId": videoId})
-    if video_info is None:
-        await bot.send_message(
-            message.chat.id, "No video found with the provided video ID."
-        )
-        return
-
-    # Update the title in the database
-    videoCollection.update_one(
-        {"fileUniqueId": videoId}, {"$set": {"videoName": new_title}}
-    )
-
-    await bot.send_message(
-        message.chat.id,
-        f"The title of the video with ID '{videoId}' has been updated to '{new_title}'.",
-    )
-
-
-def generate_random_filename(length=10):
-    letters = string.ascii_lowercase
-    return ''.join(random.choice(letters) for _ in range(length))
-
+# Handle messages
 @app.on_message(filters.video)
 async def handle_video(bot, message: Message):
     messageInit = await message.reply("Processing request...")
@@ -271,21 +151,116 @@ async def handleMessage(bot, message):
             message.chat.id, """\nPlease Choose From Menu Options... \n\n👇👇"""
         )
 
+@app.on_message(filters.command("start"))
+async def startCommand(bot, message):
+    user_id = message.from_user.id
+    userName = (message.from_user.username) or " "
+    user_record = get_user_record(user_id)
+    first = message.from_user.first_name
+    if user_record:
+        await bot.send_message(message.chat.id, f"Welcome back !! \n Upload, Share and Earn.")
+    else:
+        print("new")
+        insert_user_record(user_id, userName)
+        await bot.send_message(
+            message.chat.id,
+            f"Welcome! {first}\n\nWe're glad you're here.\nTo start using our platform\nYou can start sharing videos directly\n\n Note: If anything went wrong don't worry about it as we are on testing phase",
+        )
 
-async def process_video_link(
-    video_link: str, user_id: int, sender_username: str
-) -> str:
-    video_path = await app.download_media(video_link)
-    video_meta = await app.get_media_info(video_path)
-    fileName = os.path.basename(video_path)
+@app.on_message(filters.command("getmyuserid"))
+async def getUserId(bot, message):
+    user_id = message.from_user.id
+    await bot.send_message(
+        message.chat.id, f"""Here is your 👤 user id:\n\n {user_id}"""
+    )
+
+@app.on_message(filters.command("myaccountsinfo"))
+async def getAccountInfo(bot, message):
+    await bot.send_message(
+        message.chat.id, f"We are under construction, please check back later.... 😊"
+    )
+
+@app.on_message(filters.command("availablebots"))
+async def availableBots(bot, message):
+    bot_list = [
+        (
+            """              nutcracker video convert bot.           """,
+            "https://t.me/nutcracker_video_convert_bot",
+        ),
+        (
+            """              NutCracker Link Convert Bot             """,
+            "https://t.me/NutCracker_Link_Convert_Bot",
+        ),
+        (
+            """              NutCracker Finance Bot             """,
+            "https://t.me/NutCracker_Finance_Bot",
+        ),
+    ]
+
+    keyboard = [[InlineKeyboardButton(bot[0], url=bot[1])] for bot in bot_list]
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await bot.send_message(
+        message.chat.id,
+        f"""        Available Bots: 👇👇         """,
+        reply_markup=reply_markup,
+    )
+
+@app.on_message(filters.command("uploadfromdevice"))
+async def uploadFromDevice(bot, message):
+    await bot.send_message(message.chat.id, f"""Start Uploading Your Video ...😉""")
+
+@app.on_message(filters.command("titlerename"))
+async def titleRename(bot, message):
+    # Check if the command is triggered via the menu button
+    if message.text == "/titlerename":
+        await bot.send_message(
+            message.chat.id, "Please enter the video ID (fileUniqueId):"
+        )
+        return
+
+    # If the command is not triggered via the menu button, extract the video ID
+    args = message.text.split(maxsplit=1)
+    if len(args) < 2:
+        await bot.send_message(
+            message.chat.id, "Please provide the video ID along with the new title."
+        )
+        return
+
+    videoId, new_title = args[1].split(maxsplit=1)
+
+    # Get the user's uploaded video from the database
+    video_info = videoCollection.find_one({"fileUniqueId": videoId})
+    if video_info is None:
+        await bot.send_message(
+            message.chat.id, "No video found with the provided video ID."
+        )
+        return
+
+    # Update the title in the database
+    videoCollection.update_one(
+        {"fileUniqueId": videoId}, {"$set": {"videoName": new_title}}
+    )
+
+    await bot.send_message(
+        message.chat.id,
+        f"The title of the video with ID '{videoId}' has been updated to '{new_title}'.",
+    )
+
+def generate_random_filename(length=10):
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for _ in range(length))
+
+async def process_video_link(video_link: str, user_id: int, sender_username: str) -> str:
+    video_path = download_and_store_video(video_link)
     videoId = generate_random_hex(24)
     
     video_info = {
-        "videoName": fileName,
-        "fileLocalPath": f"/public/uploads/{fileName}",
-        "file_size": video_meta.file_size,
-        "duration": video_meta.duration,
-        "mime_type": video_meta.mime_type,
+        "videoName": os.path.basename(video_path),
+        "fileLocalPath": f"/public/uploads/{videoId}",
+        "file_size": os.path.getsize(video_path),
+        "duration": 0,  # Update with actual duration if available
+        "mime_type": "video/mp4",  # Update with actual MIME type if available
         "fileUniqueId": videoId,
         "relatedUser": user_id,
         "userName": sender_username or "",
@@ -294,7 +269,4 @@ async def process_video_link(
     videoUrl = f"http://nutcracker.live/video/{videoId}"
     return videoUrl
 
-
 app.run()
-
-
