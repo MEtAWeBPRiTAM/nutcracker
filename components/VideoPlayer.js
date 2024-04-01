@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import fetchVideoDetails from "../lib/fetchVideoDetails";
-import React from 'react';
-import ReactPlayer from 'react-player/lazy';
+import React from "react";
+import ReactPlayer from "react-player/lazy";
 import styles from "../pages/styles/videopage.module.css";
 
 function VideoPlayer({ videoId }) {
   const [videoDetails, setVideoDetails] = useState(null);
-  const [ playState, setPlayState ] = useState(false);
+  const [playState, setPlayState] = useState(false);
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -24,6 +24,29 @@ function VideoPlayer({ videoId }) {
       fetchDetails();
     }
   }, [videoId]);
+
+  const handleShare = async () => {
+    if (videoDetails && navigator.share) {
+      try {
+        await navigator.share({
+          title: videoDetails.videoName,
+          url: window.location.href,
+        });
+      } catch (error) {
+        console.error("Error sharing video:", error);
+      }
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      // You can implement your custom share functionality here
+      const shareUrl = window.location.href;
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        alert("Video link copied to clipboard!");
+      } catch (error) {
+        console.error("Error copying video link:", error);
+      }
+    }
+  };
 
   const handleVideoPlay = async () => {
     try {
