@@ -68,7 +68,7 @@ function VideoPlayer({ videoId }) {
           <div className={styles.videocontainer}>
             <ReactPlayer
               className={styles.video}
-              url={videoUrl}
+              url={"https://nutcracker.live/uploads/das.mp4"}
               controls={true}
               width="100%"
               height="100%"
