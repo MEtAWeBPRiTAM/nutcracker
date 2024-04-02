@@ -4,7 +4,7 @@ const { exec } = require('child_process');
 const directoryToWatch = './public/uploads/';
 // const commandToRestartServer = 'sudo kill $(pgrep next-serv)';
 // const commandToRestartServer2 = 'npm start';
-const commandToRestartServer3 = 'sudo kill $(pgrep next-serv)';
+const commandToRestartServer3 = 'sudo kill $(pgrep next-server)';
 // const commandToRestartServer4 = 'rs';
 
 const watcher = chokidar.watch(directoryToWatch, {
