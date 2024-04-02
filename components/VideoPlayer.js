@@ -23,6 +23,8 @@ function VideoPlayer({ videoId }) {
 
     if (videoId) {
       fetchDetails();
+    }else{
+      alert("Not found");
     }
   }, [videoId]);
 
