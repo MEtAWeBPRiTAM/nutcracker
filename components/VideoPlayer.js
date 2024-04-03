@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import fetchVideoDetails from "../lib/fetchVideoDetails";
-import ReactPlayer from "react-player";
+import ReactPlayer from "react-player/lazy";
 import styles from "../pages/styles/videopage.module.css";
 
 function VideoPlayer({ videoId }) {
