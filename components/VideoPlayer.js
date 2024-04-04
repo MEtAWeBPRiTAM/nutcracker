@@ -1,11 +1,11 @@
-// / components/VideoPlayer.js
-
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import fetchVideoDetails from "../lib/fetchVideoDetails";
-import ReactPlayer from "react-player/lazy";
+import videojs from "video.js";
+import "video.js/dist/video-js.css";
 import styles from "../pages/styles/videopage.module.css";
 
 function VideoPlayer({ videoId }) {
+  const videoRef = useRef(null);
   const [videoDetails, setVideoDetails] = useState(null);
 
   useEffect(() => {
@@ -13,11 +13,8 @@ function VideoPlayer({ videoId }) {
       try {
         const data = await fetchVideoDetails(videoId);
         setVideoDetails(data);
-        console.log(setVideoDetails);
-        console.log(data);
       } catch (error) {
         console.error("Error fetching video details:", error);
-        console.log("Error fetching video details:", error);
       }
     };
 
@@ -25,6 +22,27 @@ function VideoPlayer({ videoId }) {
       fetchDetails();
     }
   }, [videoId]);
+
+  useEffect(() => {
+    if (videoDetails) {
+      const player = videojs(videoRef.current, {
+        autoplay: false,
+        controls: true,
+        fluid: true, // Make the player responsive
+      });
+
+      player.src({
+        src: `/uploads/${videoDetails.videoName}`,
+        type: "video/mp4",
+      });
+
+      return () => {
+        if (player) {
+          player.dispose(); // Cleanup when component unmounts
+        }
+      };
+    }
+  }, [videoDetails]);
 
   const handleShare = async () => {
     if (videoDetails && navigator.share) {
@@ -37,8 +55,6 @@ function VideoPlayer({ videoId }) {
         console.error("Error sharing video:", error);
       }
     } else {
-      // Fallback for browsers that don't support Web Share API
-      // You can implement your custom share functionality here
       const shareUrl = window.location.href;
       try {
         await navigator.clipboard.writeText(shareUrl);
@@ -53,34 +69,19 @@ function VideoPlayer({ videoId }) {
     return <div>Loading...</div>;
   }
 
-  const videoUrl = `/uploads/${videoDetails.videoName}`;
-  console.log(videoUrl);
-
   return (
     <div>
-      <div className={styles.container}>
-        <div className={styles.innercontainer}>
-          <div className={styles.videotitle}>
-            <h2>{videoDetails.videoName}</h2>
-          </div>
-          <div className={styles.videocontainer}>
-            <ReactPlayer
-              className={styles.video}
-              url={videoUrl}
-              controls={true}
-              width="100%"
-              height="100%"
-            />
-          </div>
-          <div className={styles.shareButton}>
-            <button onClick={handleShare}>Share</button>
-          </div>
+      <div>
+        <h2>{videoDetails.videoName}</h2>
+        <div className={styles.videocontainer}>
+        <div data-vjs-player>
+          <video ref={videoRef} className="video-js vjs-default-skin video" />
         </div>
+        </div>
+        <button onClick={handleShare}>Share</button>
       </div>
     </div>
   );
 }
 
 export default VideoPlayer;
-
-

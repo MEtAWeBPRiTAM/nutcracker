@@ -52,7 +52,7 @@ export default async function handler(req, res) {
           const pathLc = `/public/uploads/${videoId}`;
           const videoTemplate = {
             fileUniqueId: videoId,
-            videoName: filename,
+            videoName: videoId,
             localStoragePath: pathLc,
             relatedUser: '25651563',
             viewCount: 0
