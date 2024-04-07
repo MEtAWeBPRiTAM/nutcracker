@@ -114,20 +114,15 @@ async def views_history(bot, message):
     user_id = message.from_user.id
     
     # Retrieve last 10 uploaded videos' history from the database
-    video_history = videoCollection.find(
+    video_history = await videoCollection.find(
         {"userId": user_id},
         {"_id": 0, "videoId": 1, "views": 1}
-    ).sort([("createdAt", DESCENDING)]).limit(10)
+    ).sort([("createdAt", DESCENDING)]).to_list(10)
     
-    count = 0
-    async for _ in video_history:
-        count += 1
-    
-    if count > 0:
+    if video_history:
         # Cursor has documents
         response_message = "Last 10 video views:\n"
-        video_history.rewind()  # Reset cursor to beginning
-        async for video in video_history:
+        for video in video_history:
             response_message += f"Video ID: {video['videoId']}, Views: {video['views']}\n"
     else:
         # Cursor is empty
