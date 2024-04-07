@@ -24,6 +24,10 @@ thirdBotToken = os.getenv("bot3Token")  # Change to your third bot token
 API_ID = os.getenv("api_id")
 API_HASH = os.getenv("api_hash")
 
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+credentials = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+gc = gspread.authorize(credentials)
+
 # Initialize the Telegram bot
 app = Client("third_bot", api_id=API_ID, api_hash=API_HASH, bot_token=thirdBotToken)
 
@@ -137,35 +141,35 @@ async def views_history(bot, message):
 
 
 
+
+# Handle commands
 @app.on_message(filters.command("withdraw"))
-async def withdraw(bot, message):
-    options = [
-        ["UPI Transfer", "Bank Transfer"],
-    ]
-    reply_markup = InlineKeyboardMarkup(options)
-    await bot.send_message(
-        message.chat.id,
-        "Please select your preferred withdrawal method:",
-        reply_markup=reply_markup,
-    )
+async def withdraw_command(bot, message):
+    # Send a message containing the form fields
+    form_message = "Please fill out the withdrawal form:\n\n" \
+                   "1. UPI ID:\n" \
+                   "2. Bank Account Number:\n" \
+                   "3. Withdrawal Amount:\n"
+    await bot.send_message(message.chat.id, form_message)
+    
+    # Wait for user input for each form field
+    withdrawal_info = {}
+    for field in ["UPI ID", "Bank Account Number", "Withdrawal Amount"]:
+        response = await bot.ask(message.chat.id, f"Please enter your {field}:")
+        withdrawal_info[field] = response.text
+    
+    # Send data to Google Sheet
+    send_to_google_sheet(withdrawal_info)
+    
+    # Inform the user that their withdrawal request has been processed
+    await bot.send_message(message.chat.id, "Your withdrawal request has been processed. Thank you!")
+    
 
-
-@app.on_message(filters.command("upitransfer"))
-async def upi_transfer(bot, message):
-    await bot.send_message(
-        message.chat.id,
-        "Please enter your UPI ID:",
-    )
-    # You need to implement logic to handle user input and save UPI ID
-
-
-@app.on_message(filters.command("banktransfer"))
-async def bank_transfer(bot, message):
-    await bot.send_message(
-        message.chat.id,
-        "Please enter your bank account number:",
-    )
-    # You need to implement logic to handle user input and save bank details
-
+def send_to_google_sheet(data):
+    # Open the Google Sheet
+    sheet = gc.open("Withdrawal Form").sheet1
+    
+    # Append the data to the Google Sheet
+    sheet.append_row([data["UPI ID"], data["Bank Account Number"], data["Withdrawal Amount"]])
 
 app.run()
