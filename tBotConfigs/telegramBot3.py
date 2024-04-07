@@ -144,18 +144,36 @@ async def views_history(bot, message):
 
 
 
+# Import required modules
+
 # Handle commands
 @app.on_message(filters.command("withdraw"))
 async def withdraw_command(bot, message):
-    # Initialize a dictionary to store withdrawal information
+    # Send a message containing the form fields
+    form_message = "Please fill out the withdrawal form:\n\n" \
+                   "1. Bank Name:\n" \
+                   "2. Account Number:\n" \
+                   "3. IFSC:\n" \
+                   "4. Account Holder Name:\n" \
+                   "5. Withdrawal Amount (in dollars):\n"
+    await bot.send_message(message.chat.id, form_message)
+    
+    # Store the chat ID for reference
+    chat_id = message.chat.id
+    
+    # Define a dictionary to store withdrawal information
     withdrawal_info = {}
     
     # Define a function to handle user input for each field
     async def handle_response(field):
-        await bot.send_message(message.chat.id, f"Please enter your {field}:")
+        await bot.send_message(chat_id, f"Please enter your {field}:")
+        
+        # Define a filter to listen for user messages
+        def response_filter(m):
+            return m.chat.id == chat_id and m.text is not None
         
         # Wait for the user's response
-        response = await bot.ask(message.chat.id, f"Please enter your {field}:")
+        response = await bot.listen(response_filter)
         
         # Store the response in the withdrawal_info dictionary
         withdrawal_info[field] = response.text
@@ -172,23 +190,9 @@ async def withdraw_command(bot, message):
     
     # Inform the user about the status of their withdrawal request
     if success:
-        await bot.send_message(message.chat.id, "Your withdrawal request has been processed successfully. Thank you!")
+        await bot.send_message(chat_id, "Your withdrawal request has been processed successfully. Thank you!")
     else:
-        await bot.send_message(message.chat.id, "Failed to process your withdrawal request. Please try again later.")
-    
-
-def send_to_google_sheet(data):
-    try:
-        # Open the Google Sheet
-        sheet = gc.open("Withdrawal Form").sheet1
-        
-        # Append the data to the Google Sheet
-        sheet.append_row([data["Bank Name"], data["Account Number"], data["IFSC"],
-                          data["Account Holder Name"], data["Withdrawal Amount (in dollars)"]])
-        return True
-    except Exception as e:
-        print("Error:", e)
-        return False
+        await bot.send_message(chat_id, "Failed to process your withdrawal request. Please try again later.")
 
 
 
