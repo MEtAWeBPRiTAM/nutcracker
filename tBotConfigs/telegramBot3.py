@@ -120,7 +120,7 @@ async def views_history(bot, message):
     ).sort([("createdAt", DESCENDING)]).limit(10)
     
     video_history = []
-    async for video in video_history_cursor:
+    for video in video_history_cursor:
         video_history.append(video)
     
     if video_history:
