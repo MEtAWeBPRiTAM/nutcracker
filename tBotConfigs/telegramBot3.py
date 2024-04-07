@@ -114,10 +114,12 @@ async def views_history(bot, message):
     user_id = message.from_user.id
     
     # Retrieve last 10 uploaded videos' history from the database
-    video_history = await videoCollection.find(
+    video_history_cursor = videoCollection.find(
         {"userId": user_id},
         {"_id": 0, "videoId": 1, "views": 1}
-    ).sort([("createdAt", DESCENDING)]).to_list(10)
+    ).sort([("createdAt", DESCENDING)]).limit(10)
+    
+    video_history = await video_history_cursor.to_list(length=10)
     
     if video_history:
         # Cursor has documents
