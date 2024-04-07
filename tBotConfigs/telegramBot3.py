@@ -6,7 +6,7 @@ import uvloop
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import pymongo
-from pymongo import MongoClient, DESCENDING
+from pymongo import MongoClient, DESCENDING, count_documents
 import datetime
 
 
@@ -119,7 +119,7 @@ async def views_history(bot, message):
         {"_id": 0, "videoId": 1, "views": 1}
     ).sort([("createdAt", DESCENDING)]).limit(10)
     
-    if video_history.count() > 0:
+    if await video_history.count_documents({}) > 0:
         response_message = "Last 10 video views:\n"
         for video in video_history:
             response_message += f"Video ID: {video['videoId']}, Views: {video['views']}\n"
