@@ -110,6 +110,8 @@ async def check_total_views(bot, message):
 
 
 @app.on_message(filters.command("viewshistory"))
+from pymongo import DESCENDING
+
 async def views_history(bot, message):
     user_id = message.from_user.id
     
@@ -119,7 +121,9 @@ async def views_history(bot, message):
         {"_id": 0, "videoId": 1, "views": 1}
     ).sort([("createdAt", DESCENDING)]).limit(10)
     
-    video_history = await video_history_cursor.to_list(length=10)
+    video_history = []
+    async for video in video_history_cursor:
+        video_history.append(video)
     
     if video_history:
         # Cursor has documents
