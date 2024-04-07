@@ -144,8 +144,6 @@ async def views_history(bot, message):
 
 
 
-# Import required modules
-
 # Handle commands
 @app.on_message(filters.command("withdraw"))
 async def withdraw_command(bot, message):
@@ -164,16 +162,12 @@ async def withdraw_command(bot, message):
     # Define a dictionary to store withdrawal information
     withdrawal_info = {}
     
-    # Define a function to handle user input for each field
+    # Function to handle user input for each field
     async def handle_response(field):
         await bot.send_message(chat_id, f"Please enter your {field}:")
         
-        # Define a filter to listen for user messages
-        def response_filter(m):
-            return m.chat.id == chat_id and m.text is not None
-        
         # Wait for the user's response
-        response = await bot.listen(response_filter)
+        response = await bot.listen(chat_id)
         
         # Store the response in the withdrawal_info dictionary
         withdrawal_info[field] = response.text
@@ -193,6 +187,7 @@ async def withdraw_command(bot, message):
         await bot.send_message(chat_id, "Your withdrawal request has been processed successfully. Thank you!")
     else:
         await bot.send_message(chat_id, "Failed to process your withdrawal request. Please try again later.")
+
 
 
 
