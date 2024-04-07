@@ -5,7 +5,7 @@ import pyrogram
 import asyncio
 import uvloop
 from pyrogram import Client, filters
-from pyrogram.filters import listen
+from pyrogram.raw.functions.messages import Ask
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import pymongo
 from pymongo import MongoClient, DESCENDING
@@ -169,7 +169,7 @@ async def withdraw_command(bot, message):
         await bot.send_message(chat_id, f"Please enter your {field}:")
         
         # Wait for the user's response
-        response = await bot.listen(chat_id)
+        response = await bot.send(Ask(peer=message.chat.id))
         
         # Store the response in the withdrawal_info dictionary
         withdrawal_info[field] = response.text
