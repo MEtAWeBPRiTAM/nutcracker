@@ -301,7 +301,7 @@ async def getAccountInfo(bot, message):
 async def availableBots(bot, message):
     bot_list = [
         (
-            """              nutcracker video convert bot.           """,
+            """              Nutcracker video convert bot.           """,
             "https://t.me/nutcracker_video_convert_bot",
         ),
         (

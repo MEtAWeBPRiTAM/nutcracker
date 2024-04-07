@@ -68,7 +68,7 @@ async def start_command(bot, message):
 async def available_bots(bot, message):
     bot_list = [
          (
-            """              nutcracker video convert bot.           """,
+            """              Nutcracker video convert bot.           """,
             "https://t.me/nutcracker_video_convert_bot",
         ),
         (

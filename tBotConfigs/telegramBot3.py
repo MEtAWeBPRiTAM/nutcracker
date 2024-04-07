@@ -66,8 +66,8 @@ async def start_command(bot, message):
 @app.on_message(filters.command("availablebots"))
 async def available_bots(bot, message):
     bot_list = [
-         (
-            """              nutcracker video convert bot.           """,
+        (
+            """              Nutcracker video convert bot.           """,
             "https://t.me/nutcracker_video_convert_bot",
         ),
         (
@@ -108,14 +108,26 @@ async def check_total_views(bot, message):
     )
 
 
-@app.on_message(filters.command("viewshistory"))
+from pymongo import DESCENDING
+
 async def views_history(bot, message):
     user_id = message.from_user.id
-    # Retrieve last 20 uploaded videos' history from the database
-    # You need to implement the logic to fetch and display this information
-    # Example: video_history = get_last_20_videos_history(user_id)
-    video_history = "You haven't uploaded any videos yet."  # Placeholder message
-    await bot.send_message(message.chat.id, video_history)
+    
+    # Retrieve last 10 uploaded videos' history from the database
+    video_history = videoCollection.find(
+        {"userId": user_id},
+        {"_id": 0, "videoId": 1, "views": 1}
+    ).sort([("createdAt", DESCENDING)]).limit(10)
+    
+    if video_history.count() > 0:
+        response_message = "Last 10 video views:\n"
+        for video in video_history:
+            response_message += f"Video ID: {video['videoId']}, Views: {video['views']}\n"
+    else:
+        response_message = "You haven't uploaded any videos yet."
+        
+    await bot.send_message(message.chat.id, response_message)
+
 
 
 @app.on_message(filters.command("withdraw"))
