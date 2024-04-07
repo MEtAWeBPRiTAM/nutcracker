@@ -146,6 +146,7 @@ async def views_history(bot, message):
 
 
 # Handle commands
+# Handle commands
 @app.on_message(filters.command("withdraw"))
 async def withdraw_command(bot, message):
     # Send a message containing the form fields
@@ -160,8 +161,9 @@ async def withdraw_command(bot, message):
     
     # Define a function to handle user input for each field
     async def handle_response(field):
-        response_message = await bot.listen(filters=filters.text & filters.user(message.from_user.id))
-        withdrawal_info[field] = response_message.text
+        response_message = await bot.send_message(message.chat.id, f"Please enter your {field}:")
+        response = await bot.listen(filters=filters.text & filters.chat(message.chat.id))
+        withdrawal_info[field] = response.text
     
     # Wait for user input for each form field
     await handle_response("UPI ID")
@@ -173,6 +175,7 @@ async def withdraw_command(bot, message):
     
     # Inform the user that their withdrawal request has been processed
     await bot.send_message(message.chat.id, "Your withdrawal request has been processed. Thank you!")
+
     
 
 def send_to_google_sheet(data):
