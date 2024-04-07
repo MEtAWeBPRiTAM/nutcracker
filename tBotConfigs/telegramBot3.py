@@ -6,7 +6,7 @@ import uvloop
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import pymongo
-from pymongo import MongoClient, DESCENDING, count_documents
+from pymongo import MongoClient, DESCENDING
 import datetime
 
 
