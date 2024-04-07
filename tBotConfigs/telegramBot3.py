@@ -119,14 +119,22 @@ async def views_history(bot, message):
         {"_id": 0, "videoId": 1, "views": 1}
     ).sort([("createdAt", DESCENDING)]).limit(10)
     
-    if await video_history.count() > 0:
+    count = 0
+    async for _ in video_history:
+        count += 1
+
+    if count > 0:
+        # Cursor has documents
         response_message = "Last 10 video views:\n"
-        for video in video_history:
+        video_history.rewind()  # Reset cursor to beginning
+        async for video in video_history:
             response_message += f"Video ID: {video['videoId']}, Views: {video['views']}\n"
     else:
+        # Cursor is empty
         response_message = "You haven't uploaded any videos yet."
         
     await bot.send_message(message.chat.id, response_message)
+
 
 
 
