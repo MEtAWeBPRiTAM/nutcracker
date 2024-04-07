@@ -1,6 +1,7 @@
 # Latest Script Update: 2024-03-09
 import os
 from dotenv import load_dotenv
+import pyrogram
 import asyncio
 import uvloop
 from pyrogram import Client, filters
