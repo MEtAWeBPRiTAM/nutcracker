@@ -6,8 +6,9 @@ import uvloop
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import pymongo
-from pymongo import MongoClient
+from pymongo import MongoClient, DESCENDING
 import datetime
+
 
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
@@ -108,7 +109,6 @@ async def check_total_views(bot, message):
     )
 
 
-from pymongo import DESCENDING
 
 async def views_history(bot, message):
     user_id = message.from_user.id
