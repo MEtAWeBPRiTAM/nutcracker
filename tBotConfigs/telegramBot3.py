@@ -155,11 +155,18 @@ async def withdraw_command(bot, message):
                    "3. Withdrawal Amount:\n"
     await bot.send_message(message.chat.id, form_message)
     
-    # Wait for user input for each form field
+    # Initialize a dictionary to store withdrawal information
     withdrawal_info = {}
-    for field in ["UPI ID", "Bank Account Number", "Withdrawal Amount"]:
-        response = await bot.ask(message.chat.id, f"Please enter your {field}:")
-        withdrawal_info[field] = response.text
+    
+    # Define a function to handle user input for each field
+    async def handle_response(field):
+        response_message = await bot.listen(filters=filters.text & filters.user(message.from_user.id))
+        withdrawal_info[field] = response_message.text
+    
+    # Wait for user input for each form field
+    await handle_response("UPI ID")
+    await handle_response("Bank Account Number")
+    await handle_response("Withdrawal Amount")
     
     # Send data to Google Sheet
     send_to_google_sheet(withdrawal_info)
@@ -174,5 +181,6 @@ def send_to_google_sheet(data):
     
     # Append the data to the Google Sheet
     sheet.append_row([data["UPI ID"], data["Bank Account Number"], data["Withdrawal Amount"]])
+
 
 app.run()
