@@ -5,7 +5,7 @@ import pyrogram
 import asyncio
 import uvloop
 from pyrogram import Client, filters
-from pyrogram.raw.functions.messages import Ask
+from pyrogram.raw.functions.messages.messages_Ask import Ask
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import pymongo
 from pymongo import MongoClient, DESCENDING
