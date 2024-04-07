@@ -161,7 +161,11 @@ async def withdraw_command(bot, message):
     # Define a function to handle user input for each field
     async def handle_response(field):
         await bot.send_message(message.chat.id, f"Please enter your {field}:")
+        
+        # Wait for the user's response
         response = await bot.listen()
+        
+        # Store the response in the withdrawal_info dictionary
         withdrawal_info[field] = response.text
     
     # Wait for user input for each form field
@@ -174,6 +178,7 @@ async def withdraw_command(bot, message):
     
     # Inform the user that their withdrawal request has been processed
     await bot.send_message(message.chat.id, "Your withdrawal request has been processed. Thank you!")
+
 
 
     
