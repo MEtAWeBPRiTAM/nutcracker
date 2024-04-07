@@ -110,8 +110,6 @@ async def check_total_views(bot, message):
 
 
 @app.on_message(filters.command("viewshistory"))
-from pymongo import DESCENDING
-
 async def views_history(bot, message):
     user_id = message.from_user.id
     
