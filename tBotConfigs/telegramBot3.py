@@ -144,7 +144,6 @@ async def views_history(bot, message):
 
 
 
-
 # Handle commands
 @app.on_message(filters.command("withdraw"))
 async def withdraw_command(bot, message):
@@ -156,7 +155,7 @@ async def withdraw_command(bot, message):
         await bot.send_message(message.chat.id, f"Please enter your {field}:")
         
         # Wait for the user's response
-        response = await bot.listen()
+        response = await bot.ask(message.chat.id, f"Please enter your {field}:")
         
         # Store the response in the withdrawal_info dictionary
         withdrawal_info[field] = response.text
@@ -190,7 +189,6 @@ def send_to_google_sheet(data):
     except Exception as e:
         print("Error:", e)
         return False
-
 
 
 
