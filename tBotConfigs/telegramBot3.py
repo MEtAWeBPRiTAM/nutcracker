@@ -148,13 +148,6 @@ async def views_history(bot, message):
 # Handle commands
 @app.on_message(filters.command("withdraw"))
 async def withdraw_command(bot, message):
-    # Send a message containing the form fields
-    form_message = "Please fill out the withdrawal form:\n\n" \
-                   "1. UPI ID:\n" \
-                   "2. Bank Account Number:\n" \
-                   "3. Withdrawal Amount:\n"
-    await bot.send_message(message.chat.id, form_message)
-    
     # Initialize a dictionary to store withdrawal information
     withdrawal_info = {}
     
@@ -169,15 +162,35 @@ async def withdraw_command(bot, message):
         withdrawal_info[field] = response.text
     
     # Wait for user input for each form field
-    await handle_response("UPI ID")
-    await handle_response("Bank Account Number")
-    await handle_response("Withdrawal Amount")
+    await handle_response("Bank Name")
+    await handle_response("Account Number")
+    await handle_response("IFSC")
+    await handle_response("Account Holder Name")
+    await handle_response("Withdrawal Amount (in dollars)")
     
     # Send data to Google Sheet
-    send_to_google_sheet(withdrawal_info)
+    success = send_to_google_sheet(withdrawal_info)
     
-    # Inform the user that their withdrawal request has been processed
-    await bot.send_message(message.chat.id, "Your withdrawal request has been processed. Thank you!")
+    # Inform the user about the status of their withdrawal request
+    if success:
+        await bot.send_message(message.chat.id, "Your withdrawal request has been processed successfully. Thank you!")
+    else:
+        await bot.send_message(message.chat.id, "Failed to process your withdrawal request. Please try again later.")
+    
+
+def send_to_google_sheet(data):
+    try:
+        # Open the Google Sheet
+        sheet = gc.open("Withdrawal Form").sheet1
+        
+        # Append the data to the Google Sheet
+        sheet.append_row([data["Bank Name"], data["Account Number"], data["IFSC"],
+                          data["Account Holder Name"], data["Withdrawal Amount (in dollars)"]])
+        return True
+    except Exception as e:
+        print("Error:", e)
+        return False
+
 
 
 
