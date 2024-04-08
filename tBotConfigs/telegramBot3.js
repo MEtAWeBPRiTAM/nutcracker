@@ -196,9 +196,12 @@ async function save_to_withdrawal_collection(user_id, bankDetails, withdrawalAmo
 
 async function update_withdrawal_amount(withdrawalRecord, withdrawalAmount) {
     try {
+        const currentWithdrawalAmount = withdrawalRecord.withdrawalAmount;
+
+        const newWithdrawalAmount = currentWithdrawalAmount + withdrawalAmount;
         await withdrawalCollection.updateOne(
             { _id: withdrawalRecord._id },
-            { $set: { withdrawalAmount: withdrawalAmount } }
+            { $set: { withdrawalAmount: newWithdrawalAmount } }
         );
         return true; // Success
     } catch (error) {
