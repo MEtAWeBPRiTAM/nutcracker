@@ -1,7 +1,11 @@
-const { Telegraf, session, Markup } = require('telegraf');
+const { Telegraf } = require('telegraf');
+const session = require('telegraf/session');
+const { Markup } = require('telegraf');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { MongoClient } = require('mongodb');
 const dotenv = require('dotenv');
+
+// Initialize session middleware
 dotenv.config();
 
 // Initialize session middleware
@@ -11,8 +15,10 @@ const client = new MongoClient(MONGO_URI);
 const db = client.db("nutCracker"); // Change to your database name
 const videoCollection = db.collection("videosRecord");
 const userCollection = db.collection("userRecord");
+
 const API_TOKEN = process.env.bot3Token; // Change to your third bot token
 const bot = new Telegraf(API_TOKEN);
+
 bot.use(session());
 
 
@@ -75,15 +81,15 @@ bot.command("checktotalviews", async (ctx) => {
 
 bot.command("viewshistory", async (ctx) => {
     const user_id = ctx.message.from.id;
-    
+
     // Retrieve last 10 uploaded videos' history from the database
     const video_history_cursor = videoCollection.find(
         { relatedUser: user_id },
         { _id: 0, videoId: 1, viewCount: 1 }
     ).sort({ createdAt: -1 }).limit(10);
-    
+
     const video_history = await video_history_cursor.toArray();
-    
+
     let response_message = "";
     if (video_history.length > 0) {
         response_message = "Last 10 video views:\n";
@@ -93,7 +99,7 @@ bot.command("viewshistory", async (ctx) => {
     } else {
         response_message = "You haven't uploaded any videos yet.";
     }
-    
+
     await ctx.reply(response_message);
 });
 
