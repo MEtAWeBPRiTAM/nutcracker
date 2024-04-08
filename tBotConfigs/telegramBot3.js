@@ -1,5 +1,4 @@
-const { Telegraf } = require('telegraf');
-const session = require('telegraf/session');
+const { Telegraf, session } = require('telegraf');
 const { Markup } = require('telegraf');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { MongoClient } = require('mongodb');
