@@ -144,12 +144,20 @@ bot.on("text", async (ctx) => {
         }
 
         // Save bank details to the withdrawal collection
-        const success = await save_to_withdrawal_collection(user_id, {
-            bankName: bankDetails[0],
-            accountNo: bankDetails[1],
-            ifsc: bankDetails[2],
-            accountHolderName: bankDetails[3]
-        }, 0); // No withdrawal amount yet
+        const success = await async function save_to_withdrawal_collection(user_id, bankDetails, withdrawalAmount) {
+            try {
+                await withdrawalCollection.insertOne({
+                    userId: user_id,
+                    bankDetails: bankDetails,
+                    withdrawalAmount: withdrawalAmount,
+                    createdAt: new Date()
+                });
+                return true; // Success
+            } catch (error) {
+                console.error('Error saving withdrawal request to withdrawal collection:', error);
+                return false; // Failure
+            }
+        }
 
         if (success) {
             await ctx.reply("Your bank details have been saved successfully. Now you can provide the withdrawal amount.");
