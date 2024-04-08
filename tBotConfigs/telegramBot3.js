@@ -125,7 +125,7 @@ bot.command("withdraw", async (ctx) => {
         await ctx.reply("Enter the withdrawal amount in dollars:");
         ctx.session.withdrawalRecord = withdrawal_record; // Store the withdrawal record in the session
     } else {
-        await ctx.reply("Please provide your bank details in the following format: BankName AccountNo IFSC AccountHolderName");
+        await ctx.reply(`Please provide your bank details in the following format: "BankName" "AccountNo" "IFSC" "AccountHolderName"`);
         ctx.session.expectingBankDetails = true; // Set a flag to expect bank details
     }
 });
@@ -138,7 +138,7 @@ bot.on("text", async (ctx) => {
         // Parse bank details from user input
         const bankDetails = ctx.message.text.split('" "');
         if (bankDetails.length !== 4) {
-            await ctx.reply("Invalid bank details format. Please provide bank name, account number, IFSC, and account holder name separated by double quotes.");
+            await ctx.reply("Invalid bank details format. Please provide bank name, account number, IFSC, and account holder name, separated by double quotes.");
             return;
         }
 
