@@ -84,7 +84,7 @@ bot.command("viewshistory", async (ctx) => {
     if (video_history.length > 0) {
         response_message = "Last 10 video views:\n";
         video_history.forEach((video) => {
-            response_message += `Video ID: ${video.videoId}, Views: ${video.viewCount}\n`;
+            response_message += `Video ID: ${video.fileUniqueId}, Views: ${video.viewCount}\n`;
         });
     } else {
         response_message = "You haven't uploaded any videos yet.";
