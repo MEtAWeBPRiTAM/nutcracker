@@ -242,6 +242,7 @@ async function insert_user_record(user_id, user_name) {
         userId: user_id,
         userName: user_name,
         totalViews: 0,
+        bankDetails: "",
         createdAt: new Date()
     });
 }
