@@ -121,94 +121,98 @@ bot.command("withdraw", async (ctx) => {
         return;
     }
 
-    if (!user_record.bankDetails) {
-        await ctx.reply("Please provide your bank details to proceed with the withdrawal.\n\nEnter the following information separated by a space:\n1. Bank Name\n2. Account Number\n3. IFSC Code\n4. Account Holder Name\n5. Withdrawal Amount (in dollars)");
-        await handleBankDetails(ctx);
-    } else {
-        await ctx.reply("Enter withdrawal amount (in dollars):", Markup.removeKeyboard());
-        await handleWithdrawalAmount(ctx);
-    }
-});
-
-async function handleWithdrawalAmount(ctx) {
-    const user_id = ctx.message.from.id;
-    const user_record = await get_user_record(user_id);
     const response = ctx.message.text;
-    const withdrawal_amount = parseFloat(response);
-
-    if (!user_record || !user_record.bankDetails) {
-        await ctx.reply("Please provide your bank details first.");
-        return;
-    }
-
-    // Save withdrawal details to the database
-    const success = await send_to_database(user_record, withdrawal_amount);
-
-    // Inform the user about the status of their withdrawal request
-    if (success) {
-        await ctx.reply("Your withdrawal request has been processed successfully. Thank you!");
-    } else {
-        await ctx.reply("Failed to process your withdrawal request. Please try again later.");
-    }
-}
-
-
-async function handleBankDetails(ctx) {
-    const user_id = ctx.message.from.id;
-    const user_record = await get_user_record(user_id);
-    const response = ctx.message.text;
-
-    if (!user_record) {
-        await ctx.reply("You don't have a user record. Please contact support for assistance.");
-        return;
-    }
-
-    const bankDetails = user_record.bankDetails || {};
     const details = response.split(/\s+/);
+
+    if (details.length !== 5) {
+        await ctx.reply("Invalid format. Please provide all the required bank details.");
+        return;
+    }
 
     const [bankName, accountNo, ifsc, accountHolderName, withdrawalAmount] = details;
 
-    // Update bank details in user record
-    bankDetails.bankName = bankName;
-    bankDetails.accountNo = accountNo;
-    bankDetails.ifsc = ifsc;
-    bankDetails.accountHolderName = accountHolderName;
+    const bankDetails = {
+        bankName,
+        accountNo,
+        ifsc,
+        accountHolderName
+    };
 
-    // Send withdrawal amount to database
-    const withdrawalAmountInDollars = parseFloat(withdrawalAmount);
-    const success = await send_to_database(user_record, withdrawalAmountInDollars);
+    // Save bank details to the withdrawal collection
+    const success = await save_to_withdrawal_collection(user_id, bankDetails, parseFloat(withdrawalAmount));
 
-    // Inform the user about the status of their withdrawal request
     if (success) {
         await ctx.reply("Your withdrawal request has been processed successfully. Thank you!");
     } else {
         await ctx.reply("Failed to process your withdrawal request. Please try again later.");
     }
-}
+});
 
-
-
-async function send_to_database(user_record, withdrawal_amount) {
-    const { bankName, accountNo, ifsc, accountHolderName } = user_record.bankDetails;
-
+async function save_to_withdrawal_collection(user_id, bankDetails, withdrawalAmount) {
     try {
-        // Insert withdrawal details into the database
         await withdrawalCollection.insertOne({
-            userId: user_record.userId,
-            bankName: bankName,
-            accountNo: accountNo,
-            ifsc: ifsc,
-            accountHolderName: accountHolderName,
-            withdrawalAmount: withdrawal_amount,
-            timestamp: new Date()
+            userId: user_id,
+            bankDetails: bankDetails,
+            withdrawalAmount: withdrawalAmount,
+            createdAt: new Date()
         });
-
         return true; // Success
     } catch (error) {
-        console.error('Error saving withdrawal data to database:', error);
+        console.error('Error saving withdrawal request to withdrawal collection:', error);
         return false; // Failure
     }
 }
+
+
+
+// async function handleWithdrawalAmount(ctx) {
+//     const user_id = ctx.message.from.id;
+//     const user_record = await get_user_record(user_id);
+//     const response = ctx.message.text;
+//     const withdrawal_amount = parseFloat(response);
+
+//     if (!user_record || !user_record.bankDetails) {
+//         await ctx.reply("Please provide your bank details first.");
+//         return;
+//     }
+
+//     // Save withdrawal details to the database
+//     const success = await save_to_withdrawal_collection(user_record, withdrawal_amount);
+
+//     // Inform the user about the status of their withdrawal request
+//     if (success) {
+//         await ctx.reply("Your withdrawal request has been processed successfully. Thank you!");
+//     } else {
+//         await ctx.reply("Failed to process your withdrawal request. Please try again later.");
+//     }
+// }
+
+
+
+
+
+
+// async function send_to_database(user_record, withdrawal_amount) {
+//     const { bankName, accountNo, ifsc, accountHolderName } = user_record.bankDetails;
+
+//     try {
+//         // Insert withdrawal details into the database
+//         await withdrawalCollection.insertOne({
+//             userId: user_record.userId,
+//             bankName: bankName,
+//             accountNo: accountNo,
+//             ifsc: ifsc,
+//             accountHolderName: accountHolderName,
+//             withdrawalAmount: withdrawal_amount,
+//             timestamp: new Date()
+//         });
+
+//         return true; // Success
+//     } catch (error) {
+//         console.error('Error saving withdrawal data to database:', error);
+//         return false; // Failure
+//     }
+// }
 
 
 async function get_user_record(user_id) {
