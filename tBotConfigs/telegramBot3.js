@@ -2,6 +2,7 @@ const { Telegraf, session, Markup } = require('telegraf');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { MongoClient } = require('mongodb');
 const dotenv = require('dotenv');
+dotenv.config();
 
 // Initialize session middleware
 
@@ -15,7 +16,6 @@ const bot = new Telegraf(API_TOKEN);
 bot.use(session());
 
 
-dotenv.config();
 // Handle commands
 bot.command("start", async (ctx) => {
     const user_id = ctx.message.from.id;
