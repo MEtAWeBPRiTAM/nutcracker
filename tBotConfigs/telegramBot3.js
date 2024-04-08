@@ -16,8 +16,8 @@ const db = client.db("nutCracker"); // Change to your database name
 const videoCollection = db.collection("videosRecord");
 const userCollection = db.collection("userRecord");
 
-const API_TOKEN = process.env.bot3Token; // Change to your third bot token
-const bot = new Telegraf(API_TOKEN);
+// const API_TOKEN = process.env.bot3Token; // Change to your third bot token
+const bot = new Telegraf('6945504983:AAGpTyY1kEfdoNFzH-SaD-11Sm2ieeFyC3M');
 
 bot.use(session());
 
