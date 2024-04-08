@@ -1,4 +1,5 @@
 const { Telegraf } = require('telegraf');
+const { Markup } = require('telegraf');
 const { MongoClient } = require('mongodb');
 const dotenv = require('dotenv');
 dotenv.config();
@@ -92,6 +93,56 @@ bot.command("viewshistory", async (ctx) => {
     
     await ctx.reply(response_message);
 });
+
+bot.command("withdraw", async (ctx) => {
+    const user_id = ctx.message.from.id;
+    const user_record = await get_user_record(user_id);
+    
+    if (!user_record) {
+        await ctx.reply("Please provide your bank details first. Enter your bank name:");
+        
+        const bank_details = {};
+        
+        async function handleResponse(field) {
+            await ctx.reply(`Please enter your ${field}:`);
+            
+            // Wait for the user's response
+            const response = await ctx.replyWithMarkdown('Enter your response:');
+            
+            // Store the response in the bank_details object
+            bank_details[field] = response.text;
+        }
+        
+        await handleResponse("Bank Name");
+        await handleResponse("Account Number");
+        await handleResponse("IFSC");
+        await handleResponse("Account Holder Name");
+        
+        // Update user record with bank details
+        await userCollection.updateOne(
+            { userId: user_id },
+            { $set: { bankDetails: bank_details } }
+        );
+        
+        await ctx.reply("Your bank details have been saved successfully.");
+    } else {
+        await ctx.reply("Enter withdrawal amount (in dollars):", Markup.removeKeyboard());
+        
+        const response = await ctx.replyWithMarkdown('Enter the withdrawal amount:');
+        const withdrawal_amount = parseFloat(response.text);
+        
+        // Send data to Google Sheet
+        const success = await send_to_google_sheet(user_record, withdrawal_amount);
+        
+        // Inform the user about the status of their withdrawal request
+        if (success) {
+            await ctx.reply("Your withdrawal request has been processed successfully. Thank you!");
+        } else {
+            await ctx.reply("Failed to process your withdrawal request. Please try again later.");
+        }
+    }
+});
+
 
 async function get_user_record(user_id) {
     const user_information = await userCollection.findOne({
