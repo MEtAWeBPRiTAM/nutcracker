@@ -6,7 +6,7 @@ dotenv.config();
 const MONGO_URI = process.env.mongoDB_uri;
 const client = new MongoClient(MONGO_URI);
 const db = client.db("nutCracker"); // Change to your database name
-const videoCollection = db.collection("videoRecord");
+const videoCollection = db.collection("videosRecord");
 const userCollection = db.collection("userRecord");
 
 const API_TOKEN = process.env.bot3Token; // Change to your third bot token
@@ -93,10 +93,6 @@ bot.command("viewshistory", async (ctx) => {
     await ctx.reply(response_message);
 });
 
-
-// Initialize the bot
-bot.launch();
-
 async function get_user_record(user_id) {
     const user_information = await userCollection.findOne({
         userId: user_id
@@ -112,3 +108,7 @@ async function insert_user_record(user_id, user_name) {
         createdAt: new Date()
     });
 }
+
+// Initialize the bot
+bot.launch();
+
