@@ -199,6 +199,11 @@ async function handleBankDetails(ctx) {
 
 
 async function send_to_google_sheet(user_record, withdrawal_amount) {
+    if (!user_record.bankDetails) {
+        console.error('Bank details are missing.');
+        return false; // Failure
+    }
+
     const { bankName, accountNo, ifsc, accountHolderName } = user_record.bankDetails;
 
     try {
@@ -222,6 +227,7 @@ async function send_to_google_sheet(user_record, withdrawal_amount) {
         return false; // Failure
     }
 }
+
 
 
 async function get_user_record(user_id) {
