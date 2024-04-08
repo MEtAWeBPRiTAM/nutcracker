@@ -3,7 +3,11 @@ const { Markup } = require('telegraf');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { MongoClient } = require('mongodb');
 const dotenv = require('dotenv');
+const session = require('telegraf/session');
+
+// Initialize session middleware
 dotenv.config();
+bot.use(session());
 
 const MONGO_URI = process.env.mongoDB_uri;
 const client = new MongoClient(MONGO_URI);
