@@ -1,5 +1,6 @@
 const { Telegraf } = require('telegraf');
 const { Markup } = require('telegraf');
+const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { MongoClient } = require('mongodb');
 const dotenv = require('dotenv');
 dotenv.config();
@@ -94,54 +95,148 @@ bot.command("viewshistory", async (ctx) => {
     await ctx.reply(response_message);
 });
 
+
 bot.command("withdraw", async (ctx) => {
     const user_id = ctx.message.from.id;
     const user_record = await get_user_record(user_id);
     
     if (!user_record) {
-        await ctx.reply("Please provide your bank details first. Enter your bank name:");
-        
-        const bank_details = {};
-        
-        async function handleResponse(field) {
-            await ctx.reply(`Please enter your ${field}:`);
-            
-            // Wait for the user's response
-            const response = await ctx.replyWithMarkdown('Enter your response:');
-            
-            // Store the response in the bank_details object
-            bank_details[field] = response.text;
-        }
-        
-        await handleResponse("Bank Name");
-        await handleResponse("Account Number");
-        await handleResponse("IFSC");
-        await handleResponse("Account Holder Name");
-        
-        // Update user record with bank details
-        await userCollection.updateOne(
-            { userId: user_id },
-            { $set: { bankDetails: bank_details } }
-        );
-        
-        await ctx.reply("Your bank details have been saved successfully.");
-    } else {
+        await ctx.reply("You don't have a user record. Please contact support for assistance.");
+        return;
+    }
+    
+    if (user_record.bankDetails) {
         await ctx.reply("Enter withdrawal amount (in dollars):", Markup.removeKeyboard());
         
-        const response = await ctx.replyWithMarkdown('Enter the withdrawal amount:');
-        const withdrawal_amount = parseFloat(response.text);
+        ctx.session.userRecord = user_record;
         
-        // Send data to Google Sheet
-        const success = await send_to_google_sheet(user_record, withdrawal_amount);
+        // Set the state to 'awaitingWithdrawalAmount' to indicate that we are waiting for the withdrawal amount
+        ctx.session.state = 'awaitingWithdrawalAmount';
+    } else {
+        await ctx.reply("Please provide your bank details to proceed with the withdrawal. Enter your bank name:");
         
-        // Inform the user about the status of their withdrawal request
-        if (success) {
-            await ctx.reply("Your withdrawal request has been processed successfully. Thank you!");
-        } else {
-            await ctx.reply("Failed to process your withdrawal request. Please try again later.");
-        }
+        // Set the state to 'awaitingBankDetails' to indicate that we are waiting for the user to provide bank details
+        ctx.session.state = 'awaitingBankDetails';
     }
 });
+
+// Middleware to handle user responses based on the current state
+bot.on('text', async (ctx, next) => {
+    const state = ctx.session.state;
+    
+    if (state === 'awaitingBankDetails') {
+        await handleBankDetails(ctx);
+    } else if (state === 'awaitingWithdrawalAmount') {
+        await handleWithdrawalAmount(ctx);
+    } else {
+        await next();
+    }
+});
+
+async function handleBankDetails(ctx) {
+    const user_id = ctx.message.from.id;
+    const user_record = ctx.session.userRecord;
+    
+    if (!user_record) {
+        await ctx.reply("You don't have a user record. Please contact support for assistance.");
+        return;
+    }
+    
+    // Extract the user's response
+    const response = ctx.message.text.split('\n');
+    
+    if (response.length !== 6) {
+        await ctx.reply("Please provide all the bank details.");
+        return;
+    }
+    
+    const [bankName, accountNo, confirmAccountNo, ifsc, accountHolderName, withdrawalAmount] = response;
+    
+    if (accountNo !== confirmAccountNo) {
+        await ctx.reply("Account numbers do not match. Please enter the same account number in both fields.");
+        return;
+    }
+    
+    // Update user record with bank details
+    user_record.bankDetails = {
+        bankName,
+        accountNo,
+        ifsc,
+        accountHolderName
+    };
+    
+    await userCollection.updateOne(
+        { userId: user_id },
+        { $set: { bankDetails: user_record.bankDetails } }
+    );
+    
+    await ctx.reply("Your bank details have been saved successfully.");
+    
+    // Set the state to 'awaitingWithdrawalAmount' to indicate that we are waiting for the withdrawal amount
+    ctx.session.state = 'awaitingWithdrawalAmount';
+}
+
+async function handleWithdrawalAmount(ctx) {
+    const user_id = ctx.message.from.id;
+    const user_record = ctx.session.userRecord;
+    
+    if (!user_record) {
+        await ctx.reply("You don't have a user record. Please contact support for assistance.");
+        return;
+    }
+    
+    const withdrawal_amount = parseFloat(ctx.message.text);
+    
+    // Send data to Google Sheet
+    const success = await send_to_google_sheet(user_record, withdrawal_amount);
+    
+    // Inform the user about the status of their withdrawal request
+    if (success) {
+        await ctx.reply("Your withdrawal request has been processed successfully. Thank you!");
+    } else {
+        await ctx.reply("Failed to process your withdrawal request. Please try again later.");
+    }
+    
+    // Reset the session
+    ctx.session = {};
+}
+
+
+async function send_to_google_sheet(user_record, withdrawal_amount) {
+    if (!user_record || !user_record.bankDetails) {
+        return false; // Bank details not found
+    }
+
+    const { bankName, accountNo, ifsc, accountHolderName } = user_record.bankDetails;
+
+    try {
+        const doc = new GoogleSpreadsheet('1nsLTwieJwWZqKVaWyxhrOT-oBsNfN8XMukaOX_mycRI');
+
+        await doc.useServiceAccountAuth({
+            client_email: 'nutcracker@pacific-shelter-419612.iam.gserviceaccount.com',
+            private_key: '74180f958a55a753a7b4c53231976d5405cf46f9',
+        });
+
+        await doc.loadInfo(); // loads document properties and worksheets
+
+        const sheet = doc.sheetsByIndex[0]; // Assuming the data will be saved in the first sheet
+
+        // Append the data to the Google Sheet
+        await sheet.addRow({
+            Bank_Name: bankName,
+            Account_Number: accountNo,
+            IFSC: ifsc,
+            Account_Holder_Name: accountHolderName,
+            Withdrawal_Amount: withdrawal_amount,
+        });
+
+        return true; // Success
+    } catch (error) {
+        console.error('Error sending data to Google Sheet:', error);
+        return false; // Failure
+    }
+}
+
 
 
 async function get_user_record(user_id) {
