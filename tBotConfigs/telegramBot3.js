@@ -172,10 +172,10 @@ async function handleBankDetails(ctx) {
     const bankDetails = user_record.bankDetails || {};
     const details = response.split(/\s+/);
 
-    if (details.length !== 5) {
-        await ctx.reply("Invalid format. Please provide all the required bank details.");
-        return;
-    }
+    // if (details.length !== 5) {
+    //     await ctx.reply("Invalid format. Please provide all the required bank details.");
+    //     return;
+    // }
 
     const [bankName, accountNo, ifsc, accountHolderName, withdrawalAmount] = details;
 
