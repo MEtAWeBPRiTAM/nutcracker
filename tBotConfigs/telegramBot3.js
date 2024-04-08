@@ -115,6 +115,10 @@ bot.command("withdraw", async (ctx) => {
         return;
     }
 
+    if (!ctx.session) {
+        ctx.session = {};
+    }
+
     const withdrawal_record = await withdrawalCollection.findOne({ userId: user_id });
 
     if (withdrawal_record) {
