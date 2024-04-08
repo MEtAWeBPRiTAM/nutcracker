@@ -71,33 +71,28 @@ bot.command("checktotalviews", async (ctx) => {
 
 bot.command("viewshistory", async (ctx) => {
     const user_id = ctx.message.from.id;
-    const video_history_cursor = videoCollection.find({
-        userId: user_id
-    }, {
-        projection: {
-            _id: 0,
-            videoId: 1,
-            views: 1
-        },
-        sort: {
-            createdAt: -1
-        },
-        limit: 10
-    });
-
+    
+    // Retrieve last 10 uploaded videos' history from the database
+    const video_history_cursor = videoCollection.find(
+        { relatedUser: user_id },
+        { _id: 0, videoId: 1, viewCount: 1 }
+    ).sort({ createdAt: -1 }).limit(10);
+    
     const video_history = await video_history_cursor.toArray();
-
+    
     let response_message = "";
     if (video_history.length > 0) {
         response_message = "Last 10 video views:\n";
         video_history.forEach((video) => {
-            response_message += `Video ID: ${video.videoId}, Views: ${video.views}\n`;
+            response_message += `Video ID: ${video.videoId}, Views: ${video.viewCount}\n`;
         });
     } else {
         response_message = "You haven't uploaded any videos yet.";
     }
+    
     await ctx.reply(response_message);
 });
+
 
 // Initialize the bot
 bot.launch();
