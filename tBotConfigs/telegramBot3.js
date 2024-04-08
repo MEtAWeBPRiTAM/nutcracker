@@ -165,6 +165,16 @@ bot.on("text", async (ctx) => {
             return;
         }
 
+        // Retrieve user's earnings from the user record
+        const userRecord = await userCollection.findOne({ userId: user_id });
+        const userEarnings = userRecord.totalEarnings || 0;
+
+        // Check if withdrawal amount exceeds user earnings
+        if (withdrawalAmount > userEarnings) {
+            await ctx.reply("Withdrawal amount exceeds your earnings. Please enter a valid withdrawal amount.");
+            return;
+        }
+
         // Update the withdrawal record with the withdrawal amount
         const success = await update_withdrawal_amount(withdrawalRecord, withdrawalAmount);
 
