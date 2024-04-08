@@ -121,11 +121,11 @@ bot.command("withdraw", async (ctx) => {
     }
 
     if (!user_record.bankDetails) {
-        await ctx.reply("Please provide your bank details to proceed with the withdrawal.\n\nEnter your bank name:");
+        await ctx.reply("Please provide your bank details to proceed with the withdrawal.\n\nEnter the following information separated by a space:\n1. Bank Name\n2. Account Number\n3. IFSC Code\n4. Account Holder Name\n5. Withdrawal Amount (in dollars)");
         ctx.session.state = 'awaitingBankDetails';
     } else {
         await ctx.reply("Enter withdrawal amount (in dollars):", Markup.removeKeyboard());
-        ctx.session.state = 'awaitingWithdrawalAmount';
+        await handleWithdrawalAmount(ctx);
     }
 });
 
@@ -134,52 +134,14 @@ bot.on('text', async (ctx) => {
 
     if (state === 'awaitingBankDetails') {
         await handleBankDetails(ctx);
-    } else if (state === 'awaitingWithdrawalAmount') {
-        await handleWithdrawalAmount(ctx);
     }
 });
 
-async function handleBankDetails(ctx) {
+async function handleWithdrawalAmount(ctx) {
     const user_id = ctx.message.from.id;
     const user_record = await get_user_record(user_id);
     const response = ctx.message.text;
-
-    if (!user_record) {
-        await ctx.reply("You don't have a user record. Please contact support for assistance.");
-        return;
-    }
-
-    const bankDetails = user_record.bankDetails || {};
-    switch (Object.keys(bankDetails).length) {
-        case 0:
-            bankDetails.bankName = response;
-            await ctx.reply("Enter your account number:");
-            break;
-        case 1:
-            bankDetails.accountNo = response;
-            await ctx.reply("Confirm your account number:");
-            break;
-        case 2:
-            if (bankDetails.accountNo !== response) {
-                await ctx.reply("Account numbers do not match. Please enter the same account number in both fields.");
-                return;
-            }
-            bankDetails.ifsc = response;
-            await ctx.reply("Enter your account holder name:");
-            break;
-        case 3:
-            bankDetails.accountHolderName = response;
-            await ctx.reply("Enter withdrawal amount (in dollars):", Markup.removeKeyboard());
-            await updateBankDetails(user_id, bankDetails);
-            break;
-    }
-}
-
-async function handleWithdrawalAmount(ctx) {
-    const user_id = ctx.message.from.id;
-    const withdrawal_amount = parseFloat(ctx.message.text);
-
-    const user_record = await get_user_record(user_id);
+    const withdrawal_amount = parseFloat(response);
 
     if (!user_record || !user_record.bankDetails) {
         await ctx.reply("Please provide your bank details first.");
@@ -197,12 +159,44 @@ async function handleWithdrawalAmount(ctx) {
     }
 }
 
-async function updateBankDetails(user_id, bankDetails) {
-    await userCollection.updateOne(
-        { userId: user_id },
-        { $set: { bankDetails: bankDetails } }
-    );
+async function handleBankDetails(ctx) {
+    const user_id = ctx.message.from.id;
+    const user_record = await get_user_record(user_id);
+    const response = ctx.message.text;
+
+    if (!user_record) {
+        await ctx.reply("You don't have a user record. Please contact support for assistance.");
+        return;
+    }
+
+    const bankDetails = user_record.bankDetails || {};
+    const details = response.split(/\s+/);
+
+    if (details.length !== 5) {
+        await ctx.reply("Invalid format. Please provide all the required bank details.");
+        return;
+    }
+
+    const [bankName, accountNo, ifsc, accountHolderName, withdrawalAmount] = details;
+
+    // Update bank details in user record
+    bankDetails.bankName = bankName;
+    bankDetails.accountNo = accountNo;
+    bankDetails.ifsc = ifsc;
+    bankDetails.accountHolderName = accountHolderName;
+
+    // Send withdrawal amount to Google Sheet
+    const withdrawalAmountInDollars = parseFloat(withdrawalAmount);
+    const success = await send_to_google_sheet(user_record, withdrawalAmountInDollars);
+
+    // Inform the user about the status of their withdrawal request
+    if (success) {
+        await ctx.reply("Your withdrawal request has been processed successfully. Thank you!");
+    } else {
+        await ctx.reply("Failed to process your withdrawal request. Please try again later.");
+    }
 }
+
 
 async function send_to_google_sheet(user_record, withdrawal_amount) {
     const { bankName, accountNo, ifsc, accountHolderName } = user_record.bankDetails;
