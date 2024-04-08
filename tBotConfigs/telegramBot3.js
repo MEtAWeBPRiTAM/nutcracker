@@ -1,12 +1,12 @@
-const { Telegraf } = require('telegraf');
-const session = require('telegraf/session');
-const { Markup } = require('telegraf');
+const { Telegraf, session, Markup } = require('telegraf');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { MongoClient } = require('mongodb');
 const dotenv = require('dotenv');
 
 // Initialize session middleware
-dotenv.config();
+const API_TOKEN = process.env.bot3Token; // Change to your third bot token
+const bot = new Telegraf(API_TOKEN);
+bot.use(session());
 
 const MONGO_URI = process.env.mongoDB_uri;
 const client = new MongoClient(MONGO_URI);
@@ -14,10 +14,8 @@ const db = client.db("nutCracker"); // Change to your database name
 const videoCollection = db.collection("videosRecord");
 const userCollection = db.collection("userRecord");
 
-const API_TOKEN = process.env.bot3Token; // Change to your third bot token
-const bot = new Telegraf(API_TOKEN);
 
-bot.use(session());
+dotenv.config();
 // Handle commands
 bot.command("start", async (ctx) => {
     const user_id = ctx.message.from.id;
