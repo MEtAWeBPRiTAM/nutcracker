@@ -171,7 +171,7 @@ bot.on("text", async (ctx) => {
 
         // Check if withdrawal amount exceeds user earnings
         if (withdrawalAmount > userEarnings) {
-            await ctx.reply("Withdrawal amount exceeds your earnings. Please enter a valid withdrawal amount.");
+            await ctx.reply(`Your Total Earnings : ${userEarnings} /n Withdrawal amount exceeds your earnings. Please enter a valid withdrawal amount.`);
             return;
         }
 
