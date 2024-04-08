@@ -170,7 +170,7 @@ bot.on("text", async (ctx) => {
 
         // Check if withdrawal amount exceeds user earnings
         if (withdrawalAmount > userEarnings) {
-            await ctx.reply(`Your Total Earnings : ${userEarnings}\nWithdrawal amount exceeds your earnings. Please enter a valid withdrawal amount.`);
+            await ctx.reply(`Your Total Earnings : ${userEarnings} $\nWithdrawal amount exceeds your earnings. Please enter a valid withdrawal amount.`);
             return;
         }
 
@@ -236,6 +236,7 @@ async function insert_user_record(user_id, user_name) {
         userName: user_name,
         totalViews: 0,
         bankDetails: "",
+        currentEarning: "",
         totalEarnings: "",
         createdAt: new Date()
     });
