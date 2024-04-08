@@ -168,15 +168,24 @@ async function handleBankDetails(ctx) {
 
     const [bankName, accountNo, ifsc, accountHolderName, withdrawalAmount] = details;
 
+    // Update bank details in user record
     bankDetails.bankName = bankName;
     bankDetails.accountNo = accountNo;
     bankDetails.ifsc = ifsc;
     bankDetails.accountHolderName = accountHolderName;
 
-    // Here, you would save the bank details to the database
+    // Send withdrawal amount to database
+    const withdrawalAmountInDollars = parseFloat(withdrawalAmount);
+    const success = await send_to_database(user_record, withdrawalAmountInDollars);
 
-    await ctx.reply("Bank details saved successfully. Enter withdrawal amount (in dollars):", Markup.removeKeyboard());
+    // Inform the user about the status of their withdrawal request
+    if (success) {
+        await ctx.reply("Your withdrawal request has been processed successfully. Thank you!");
+    } else {
+        await ctx.reply("Failed to process your withdrawal request. Please try again later.");
+    }
 }
+
 
 
 async function send_to_database(user_record, withdrawal_amount) {
