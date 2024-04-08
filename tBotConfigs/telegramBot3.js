@@ -130,25 +130,24 @@ bot.command("withdraw", async (ctx) => {
     }
 });
 
-// Handle user's response to the withdrawal amount or bank details
 bot.on("text", async (ctx) => {
     const user_id = ctx.message.from.id;
     const { withdrawalRecord, expectingBankDetails } = ctx.session;
 
     if (expectingBankDetails) {
         // Parse bank details from user input
-        const bankDetails = ctx.message.text.split(/\s+/);
+        const bankDetails = ctx.message.text.split('" "');
         if (bankDetails.length !== 4) {
-            await ctx.reply("Invalid bank details format. Please provide BankName AccountNo IFSC AccountHolderName");
+            await ctx.reply("Invalid bank details format. Please provide bank name, account number, IFSC, and account holder name separated by double quotes.");
             return;
         }
 
         // Save bank details to the withdrawal collection
         const success = await save_to_withdrawal_collection(user_id, {
-            bankName: bankDetails[0],
+            bankName: bankDetails[0].replace('"', ''),
             accountNo: bankDetails[1],
             ifsc: bankDetails[2],
-            accountHolderName: bankDetails[3]
+            accountHolderName: bankDetails[3].replace('"', '')
         }, 0); // No withdrawal amount yet
 
         if (success) {
@@ -171,7 +170,7 @@ bot.on("text", async (ctx) => {
 
         // Check if withdrawal amount exceeds user earnings
         if (withdrawalAmount > userEarnings) {
-            await ctx.reply(`Your Total Earnings : ${userEarnings} /n Withdrawal amount exceeds your earnings. Please enter a valid withdrawal amount.`);
+            await ctx.reply(`Your Total Earnings : ${userEarnings}\nWithdrawal amount exceeds your earnings. Please enter a valid withdrawal amount.`);
             return;
         }
 
@@ -188,6 +187,7 @@ bot.on("text", async (ctx) => {
         delete ctx.session.withdrawalRecord;
     }
 });
+
 
 async function save_to_withdrawal_collection(user_id, bankDetails, withdrawalAmount) {
     try {
