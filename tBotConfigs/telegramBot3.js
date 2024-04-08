@@ -15,6 +15,7 @@ const client = new MongoClient(MONGO_URI);
 const db = client.db("nutCracker"); // Change to your database name
 const videoCollection = db.collection("videosRecord");
 const userCollection = db.collection("userRecord");
+const withdrawalCollection = db.collection("bankRecord");
 
 // const API_TOKEN = process.env.bot3Token; // Change to your third bot token
 const bot = new Telegraf('6945504983:AAGpTyY1kEfdoNFzH-SaD-11Sm2ieeFyC3M');
@@ -122,20 +123,12 @@ bot.command("withdraw", async (ctx) => {
 
     if (!user_record.bankDetails) {
         await ctx.reply("Please provide your bank details to proceed with the withdrawal.\n\nEnter the following information separated by a space:\n1. Bank Name\n2. Account Number\n3. IFSC Code\n4. Account Holder Name\n5. Withdrawal Amount (in dollars)");
-        await handleBankDetails(ctx); // Directly call the function
+        await handleBankDetails(ctx);
     } else {
         await ctx.reply("Enter withdrawal amount (in dollars):", Markup.removeKeyboard());
         await handleWithdrawalAmount(ctx);
     }
 });
-
-// bot.on('text', async (ctx) => {
-//     const state = ctx.session.state;
-
-//     if (state === 'awaitingBankDetails') {
-//         await handleBankDetails(ctx);
-//     }
-// });
 
 async function handleWithdrawalAmount(ctx) {
     const user_id = ctx.message.from.id;
@@ -148,8 +141,8 @@ async function handleWithdrawalAmount(ctx) {
         return;
     }
 
-    // Send data to Google Sheet
-    const success = await send_to_google_sheet(user_record, withdrawal_amount);
+    // Save withdrawal details to the database
+    const success = await send_to_database(user_record, withdrawal_amount);
 
     // Inform the user about the status of their withdrawal request
     if (success) {
@@ -158,6 +151,7 @@ async function handleWithdrawalAmount(ctx) {
         await ctx.reply("Failed to process your withdrawal request. Please try again later.");
     }
 }
+
 
 async function handleBankDetails(ctx) {
     const user_id = ctx.message.from.id;
@@ -172,53 +166,37 @@ async function handleBankDetails(ctx) {
     const bankDetails = user_record.bankDetails || {};
     const details = response.split(/\s+/);
 
-    // if (details.length !== 5) {
-    //     await ctx.reply("Invalid format. Please provide all the required bank details.");
-    //     return;
-    // }
-
     const [bankName, accountNo, ifsc, accountHolderName, withdrawalAmount] = details;
 
-    // Update bank details in user record
     bankDetails.bankName = bankName;
     bankDetails.accountNo = accountNo;
     bankDetails.ifsc = ifsc;
     bankDetails.accountHolderName = accountHolderName;
 
-    // Send withdrawal amount to Google Sheet
-    const withdrawalAmountInDollars = parseFloat(withdrawalAmount);
-    const success = await send_to_google_sheet(user_record, withdrawalAmountInDollars);
+    // Here, you would save the bank details to the database
 
-    // Inform the user about the status of their withdrawal request
-    if (success) {
-        await ctx.reply("Your withdrawal request has been processed successfully. Thank you!");
-    } else {
-        await ctx.reply("Failed to process your withdrawal request. Please try again later.");
-    }
+    await ctx.reply("Bank details saved successfully. Enter withdrawal amount (in dollars):", Markup.removeKeyboard());
 }
 
 
-async function send_to_google_sheet(user_record, withdrawal_amount) {
+async function send_to_database(user_record, withdrawal_amount) {
     const { bankName, accountNo, ifsc, accountHolderName } = user_record.bankDetails;
 
     try {
-        const doc = new GoogleSpreadsheet('1nsLTwieJwWZqKVaWyxhrOT-oBsNfN8XMukaOX_mycRI');
-        await doc.useServiceAccountAuth(credentials);
-        await doc.loadInfo();
-
-        const sheet = doc.sheetsByIndex[0];
-
-        await sheet.addRow({
-            Bank_Name: bankName,
-            Account_Number: accountNo,
-            IFSC: ifsc,
-            Account_Holder_Name: accountHolderName,
-            Withdrawal_Amount: withdrawal_amount,
+        // Insert withdrawal details into the database
+        await withdrawalCollection.insertOne({
+            userId: user_record.userId,
+            bankName: bankName,
+            accountNo: accountNo,
+            ifsc: ifsc,
+            accountHolderName: accountHolderName,
+            withdrawalAmount: withdrawal_amount,
+            timestamp: new Date()
         });
 
         return true; // Success
     } catch (error) {
-        console.error('Error sending data to Google Sheet:', error);
+        console.error('Error saving withdrawal data to database:', error);
         return false; // Failure
     }
 }
