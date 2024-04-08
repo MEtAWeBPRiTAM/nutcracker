@@ -122,20 +122,20 @@ bot.command("withdraw", async (ctx) => {
 
     if (!user_record.bankDetails) {
         await ctx.reply("Please provide your bank details to proceed with the withdrawal.\n\nEnter the following information separated by a space:\n1. Bank Name\n2. Account Number\n3. IFSC Code\n4. Account Holder Name\n5. Withdrawal Amount (in dollars)");
-        ctx.session.state = 'awaitingBankDetails';
+        await handleBankDetails(ctx); // Directly call the function
     } else {
         await ctx.reply("Enter withdrawal amount (in dollars):", Markup.removeKeyboard());
         await handleWithdrawalAmount(ctx);
     }
 });
 
-bot.on('text', async (ctx) => {
-    const state = ctx.session.state;
+// bot.on('text', async (ctx) => {
+//     const state = ctx.session.state;
 
-    if (state === 'awaitingBankDetails') {
-        await handleBankDetails(ctx);
-    }
-});
+//     if (state === 'awaitingBankDetails') {
+//         await handleBankDetails(ctx);
+//     }
+// });
 
 async function handleWithdrawalAmount(ctx) {
     const user_id = ctx.message.from.id;
