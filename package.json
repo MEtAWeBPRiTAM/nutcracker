@@ -1,34 +1,21 @@
 {
-  "name": "nutcracker",
-  "version": "0.1.0",
-  "private": true,
+  "name": "y",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "node server.js"
   },
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "axios": "^1.6.7",
-    "chokidar": "^3.6.0",
-    "express": "^4.18.2",
-    "formidable": "^3.5.1",
-    "mongodb": "^6.3.0",
+    "axios": "^1.6.8",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.9",
+    "express": "^4.19.2",
+    "mongodb": "^6.5.0",
+    "mongoose": "^8.3.0",
     "multer": "^1.4.5-lts.1",
-    "next": "14.1.0",
-    "node-cron": "^3.0.3",
-    "node-fetch": "^2.7.0",
-    "node-telegram-bot-api": "^0.64.0",
-    "react": "^18",
-    "react-dom": "^18",
-    "react-icons": "^5.0.1",
-    "react-player": "^2.14.1",
-    "remixicon": "^4.1.0",
-    "sequelize": "^6.36.0",
-    "uuid": "^9.0.1",
-    "video.js": "^8.10.0"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.0"
+    "telegraf": "^4.16.3"
   }
 }

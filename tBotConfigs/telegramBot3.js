@@ -1,8 +1,9 @@
 const { Telegraf, session } = require('telegraf');
 const { Markup } = require('telegraf');
-const { GoogleSpreadsheet } = require('google-spreadsheet');
+// const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { MongoClient } = require('mongodb');
 const dotenv = require('dotenv');
+const axios = require('axios');
 
 // Initialize session middleware
 dotenv.config();
@@ -170,7 +171,7 @@ bot.on("text", async (ctx) => {
 
         // Check if withdrawal amount exceeds user earnings
         if (withdrawalAmount > userEarnings) {
-            await ctx.reply(`Your Total Earnings : ${userEarnings} $\nWithdrawal amount exceeds your earnings. Please enter a valid withdrawal amount.`);
+            await ctx.reply(`Your Total Earnings : ${userEarnings} $\nWithdrawal amount exceeds your earnings.\nPlease enter a valid withdrawal amount.`);
             return;
         }
 
@@ -178,7 +179,18 @@ bot.on("text", async (ctx) => {
         const success = await update_withdrawal_amount(withdrawalRecord, withdrawalAmount);
 
         if (success) {
-            await ctx.reply("Your withdrawal request has been processed successfully. Thank you!");
+            // Send withdrawal request data to the dashboard
+            try {
+                await axios.post('http://localhost:3000/withdrawal-request', {
+                    userId: user_id,
+                    withdrawalAmount: withdrawalAmount,
+                    // Include any other relevant data you want to send to the dashboard
+                });
+                await ctx.reply("Your withdrawal request has been processed successfully\nIt will be processed in 48 hours.");
+            } catch (error) {
+                console.error('Error sending withdrawal request to the dashboard:', error);
+                await ctx.reply("Your withdrawal request has been processed successfully, but there was an error sending it to the dashboard.");
+            }
         } else {
             await ctx.reply("Failed to process your withdrawal request. Please try again later.");
         }

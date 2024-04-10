@@ -1,0 +1,77 @@
+@media screen and (max-width:768px) {
+    .maincontainer {
+        height: fit-content;
+    }
+
+    .section1 {
+        height: fit-content;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: .5rem;
+    }
+
+    .section1 .left,
+    .section1 .right {
+        width: 100%;
+        height: fit-content;
+    }
+
+    .left {
+        padding: 1rem 0;
+    }
+
+    .left .wrapper {
+        width: 100%;
+    }
+
+    .right {
+        padding: 1.5rem 0;
+    }
+
+    .buttonsContainer {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .button,
+    .buttonsec {
+        width: fit-content;
+        font-size: 15px;
+    }
+
+    .headingslogan {
+        margin-bottom: 1.5rem;
+    }
+
+    .section1 .left h1 {
+        font-size: 2.4rem;
+    }
+
+    .acontainer {
+        flex-direction: column;
+        padding: 1.5rem .5rem;
+    }
+
+    .leftpart,
+    .rightpart {
+        width: 100%;
+    }
+
+    .howworksbox p {
+        font-size: 1rem;
+        padding: 1rem .5rem;
+    }
+
+    .terms .container {
+        padding: 1rem .5rem;
+    }
+
+    .terms .mainheading {
+        font-size: 1.7rem;
+    }
+
+    .terms .maincontainer2 {
+        padding: 1rem 0 0 0;
+    }
+}
