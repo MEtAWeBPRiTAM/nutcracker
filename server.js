@@ -32,7 +32,8 @@ connectToDatabase();
 // MongoDB connection
 mongoose.connect(MONGO_URI, {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    dbName: 'nutCracker'
 });
 
 // Define video schema and model
@@ -41,14 +42,21 @@ const videoSchema = new mongoose.Schema({
     filename: String,
     uniqueLink: String
 });
+// Define video playback schema
+const playbackSchema = new mongoose.Schema({
+    uniqueLink: String,
+    filename: String,
+    // Add any additional fields you need for video playback
+});
 
-const Video = mongoose.model('Video', videoSchema, 'videos');
+const Video = mongoose.model('Video', videoSchema, 'tmpRecord'); 
+const PlaybackVideo = mongoose.model('PlaybackVideo', playbackSchema, 'videosRecord'); 
 
 
 // Multer configuration for file uploads
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'tmpvideos/');
+        cb(null, 'uploads/');
     },
     filename: function (req, file, cb) {
         cb(null, file.originalname);
@@ -57,14 +65,11 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 function generateUniqueLink(length) {
-    const characters = 'abcdef0123456789';
-    let randomHex = '';
-
+    const characters = "abcdef0123456789";
+    let randomHex = "";
     for (let i = 0; i < length; i++) {
-        const randomIndex = Math.floor(Math.random() * characters.length);
-        randomHex += characters.charAt(randomIndex);
+        randomHex += characters.charAt(Math.floor(Math.random() * characters.length));
     }
-
     return randomHex;
 }
 
@@ -126,7 +131,7 @@ app.get('/play/:uniqueLink', async (req, res) => {
     try {
         const uniqueLink = req.params.uniqueLink;
         // Find the video based on unique link from MongoDB
-        const video = await Video.findOne({ uniqueLink });
+        const video = await PlaybackVideo.findOne({ uniqueLink });
 
         if (!video) {
             return res.status(404).send('Video not found');
