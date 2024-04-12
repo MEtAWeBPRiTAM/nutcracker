@@ -1,11 +1,14 @@
 require('dotenv').config();
 const { Telegraf, Scenes, session } = require('telegraf');
 const { MongoClient } = require('mongodb');
+const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 const { promisify } = require('util');
 const fetch = require('node-fetch');
+const ffmpeg = require('fluent-ffmpeg');
+
 
 
 const app = new Telegraf(process.env.bot1Token);
@@ -31,44 +34,68 @@ async function main() {
         const userCollection = db.collection('userRecord');
 
 
-        // Handle messages
+
+        async function downloadAndStoreVideo(videoUrl, folder = "../uploads/") {
+            const response = await axios({
+                url: videoUrl,
+                method: 'GET',
+                responseType: 'stream'
+            });
+
+            const filename = path.basename(new URL(videoUrl).pathname);
+            const originalFilepath = path.join(folder, filename);
+            const convertedFilename = `${filename.split('.')[0]}_converted.mp4`;
+            const convertedFilepath = path.join(folder, convertedFilename);
+
+            const writer = fs.createWriteStream(originalFilepath);
+            response.data.pipe(writer);
+
+            return new Promise((resolve, reject) => {
+                writer.on('finish', async () => {
+                    try {
+                        await new Promise((resolve, reject) => {
+                            ffmpeg(originalFilepath)
+                                .outputOptions('-vf scale=640:-1')
+                                .on('error', reject)
+                                .on('end', resolve)
+                                .save(convertedFilepath);
+                        });
+                        resolve({ filepath: convertedFilepath, filename: convertedFilename });
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+                writer.on('error', reject);
+            });
+        }
+
+
+
         app.on('video', async (ctx) => {
             const user_id = ctx.message.from.id;
-            const file_id = ctx.message.video.file_id;
+            const video_file = ctx.message.video.file_id;
+            const video_url = await ctx.telegram.getFileLink(video_file);
 
             try {
-                const fileInfo = await ctx.telegram.getFile(file_id);
-                const videoUrl = `https://api.telegram.org/file/bot${process.env.bot1Token}/${fileInfo.file_path}`;
-                const originalFilename = fileInfo.file_path.split('/').pop();
-
+                const { filepath, filename } = await downloadAndStoreVideo(video_url);
                 const videoId = generateRandomHex(24);
-                const videoName = `${videoId}_${originalFilename}`;
 
                 const video_info = {
-                    filename: videoName,
-                    fileLocalPath: `../uploads/${videoId}`,
+                    videoName: filename,
+                    fileLocalPath: `../uploads/${filename}`,
                     file_size: ctx.message.video.file_size,
                     duration: ctx.message.video.duration,
-                    mime_type: ctx.message.video.mime_type,
-                    uniqueLink: videoId,
+                    mime_type: 'video/mp4', // Update with actual MIME type if available
+                    fileUniqueId: videoId,
                     relatedUser: user_id,
-                    userName: ctx.message.from.username || '',
-                    viewCount: 0,
+                    userName: ctx.message.from.username || "",
+                    viewCount: 0
                 };
 
                 await videoCollection.insertOne(video_info);
 
-                // Download video file
-                const videoFilePath = `../uploads/${videoName}`;
-                const writer = fs.createWriteStream(videoFilePath);
-                const response = await axios({
-                    url: videoUrl,
-                    method: 'GET',
-                    responseType: 'stream'
-                });
-                response.data.pipe(writer);
-
-                await ctx.reply(`Your video has been uploaded successfully...\n\n😊😊Now you can start using the link:\n\nhttp://nutcracker.live/play/${videoId}`);
+                const videoUrl = `http://nutcracker.live/video/${videoId}`;
+                await ctx.reply(`Your video has been uploaded successfully...\n\n😊😊Now you can start using the link:\n\n${videoUrl}`);
             } catch (error) {
                 console.error(error);
                 await ctx.reply('An error occurred while processing your request. Please try again later.');
@@ -84,31 +111,31 @@ async function main() {
 
         titlerenameScene.on('text', async (ctx) => {
             const messageText = ctx.message.text.trim();
-        
+
             // Check if a video ID is provided
             if (!ctx.session.videoId) {
                 const videoId = messageText;
                 console.log(videoId);
                 const videoRecord = await videoCollection.findOne({ uniqueLink: videoId });
-        
+
                 if (!videoRecord) {
                     ctx.reply('No video found with the provided video ID.');
                     return ctx.scene.leave();
                 }
-        
+
                 ctx.session.videoId = videoId;
                 ctx.reply('Please enter the new title:');
             } else {
                 // Assuming the text input is the new title
                 const newTitle = messageText;
-        
+
                 try {
                     const updatedRecord = await videoCollection.findOneAndUpdate(
                         { uniqueLink: ctx.session.videoId },
                         { $set: { filename: newTitle } },
                         { returnOriginal: false } // Ensure to return the updated document
                     );
-        
+
                     if (!updatedRecord.value) {
                         // The record was not found or not updated
                         ctx.reply('No video found with the provided video ID or the title was not updated.');
@@ -120,11 +147,11 @@ async function main() {
                     console.error(error);
                     ctx.reply('An error occurred while processing your request. Please try again later.');
                 }
-        
+
                 return ctx.scene.leave();
             }
         });
-        
+
 
         app.command('titlerename', async (ctx) => {
             ctx.scene.enter('titlerenameScene');
