@@ -56,7 +56,7 @@ const PlaybackVideo = mongoose.model('PlaybackVideo', playbackSchema, 'videosRec
 // Multer configuration for file uploads
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'uploads/');
+        cb(null, 'tmpvideos/');
     },
     filename: function (req, file, cb) {
         cb(null, file.originalname);
