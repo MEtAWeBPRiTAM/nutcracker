@@ -5,6 +5,7 @@ import random
 import string
 from dotenv import load_dotenv
 import re
+import uvloop
 import asyncio
 import requests
 from pyrogram import Client, filters
