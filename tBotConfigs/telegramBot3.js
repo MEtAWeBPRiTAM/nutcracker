@@ -106,7 +106,6 @@ bot.command("viewshistory", async (ctx) => {
 
 
 
-// Define Google Sheets credentials
 bot.command("withdraw", async (ctx) => {
     const user_id = ctx.message.from.id;
     const user_record = await get_user_record(user_id);
@@ -126,38 +125,53 @@ bot.command("withdraw", async (ctx) => {
         await ctx.reply("Enter the withdrawal amount in dollars:");
         ctx.session.withdrawalRecord = withdrawal_record; // Store the withdrawal record in the session
     } else {
-        await ctx.reply(`Please provide your bank details in the following format: "BankName" "AccountNo" "IFSC" "AccountHolderName"`);
-        ctx.session.expectingBankDetails = true; // Set a flag to expect bank details
+        await ctx.reply("Enter your bank name:");
+        ctx.session.expectingBankName = true; // Set a flag to expect bank name
     }
 });
 
 bot.on("text", async (ctx) => {
     const user_id = ctx.message.from.id;
-    const { withdrawalRecord, expectingBankDetails } = ctx.session;
+    const { withdrawalRecord, expectingBankName, expectingAccountNo, expectingIFSC, expectingAccountHolderName } = ctx.session;
 
-    if (expectingBankDetails) {
-        // Parse bank details from user input
-        const bankDetails = ctx.message.text.split('" "');
-        if (bankDetails.length !== 4) {
-            await ctx.reply("Invalid bank details format. Please provide bank name, account number, IFSC, and account holder name, separated by double quotes.");
-            return;
-        }
-
+    if (expectingBankName) {
+        const bankName = ctx.message.text;
+        // Save bank name to the session
+        ctx.session.bankDetails = { bankName };
+        // Prompt for the next bank detail
+        await ctx.reply("Enter your account number:");
+        ctx.session.expectingBankName = false;
+        ctx.session.expectingAccountNo = true;
+    } else if (expectingAccountNo) {
+        const accountNo = ctx.message.text;
+        // Save account number to the session
+        ctx.session.bankDetails.accountNo = accountNo;
+        // Prompt for the next bank detail
+        await ctx.reply("Enter the IFSC:");
+        ctx.session.expectingAccountNo = false;
+        ctx.session.expectingIFSC = true;
+    } else if (expectingIFSC) {
+        const ifsc = ctx.message.text;
+        // Save IFSC to the session
+        ctx.session.bankDetails.ifsc = ifsc;
+        // Prompt for the next bank detail
+        await ctx.reply("Enter the account holder's name:");
+        ctx.session.expectingIFSC = false;
+        ctx.session.expectingAccountHolderName = true;
+    } else if (expectingAccountHolderName) {
+        const accountHolderName = ctx.message.text;
+        // Save account holder's name to the session
+        ctx.session.bankDetails.accountHolderName = accountHolderName;
         // Save bank details to the withdrawal collection
-        const success = await save_to_withdrawal_collection(user_id, {
-            bankName: bankDetails[0].replace('"', ''),
-            accountNo: bankDetails[1],
-            ifsc: bankDetails[2],
-            accountHolderName: bankDetails[3].replace('"', '')
-        }, 0); // No withdrawal amount yet
+        const success = await save_to_withdrawal_collection(user_id, ctx.session.bankDetails, 0); // No withdrawal amount yet
 
         if (success) {
             await ctx.reply("Your bank details have been saved successfully. Now you can provide the withdrawal amount.");
-            ctx.session.expectingBankDetails = false; // Reset the flag
+            delete ctx.session.bankDetails; // Clear bank details from session
         } else {
             await ctx.reply("Failed to save your bank details. Please try again later.");
         }
-    } else if (withdrawalRecord) {
+    }else if (withdrawalRecord) {
         // User provided withdrawal amount
         const withdrawalAmount = parseFloat(ctx.message.text);
         if (isNaN(withdrawalAmount) || withdrawalAmount <= 0) {
@@ -179,17 +193,15 @@ bot.on("text", async (ctx) => {
         const success = await update_withdrawal_amount(withdrawalRecord, withdrawalAmount);
 
         if (success) {
-            // Send withdrawal request data to the dashboard
             try {
-                await axios.post('http://localhost:3000/withdrawal-request', {
-                    userId: user_id,
-                    withdrawalAmount: withdrawalAmount,
-                    // Include any other relevant data you want to send to the dashboard
-                });
+                // await axios.post('https://nutcracker.live/withdrawal-request', {
+                //     userId: user_id,
+                //     withdrawalAmount: withdrawalAmount,
+                // });
                 await ctx.reply("Your withdrawal request has been processed successfully\nIt will be processed in 48 hours.");
             } catch (error) {
                 console.error('Error sending withdrawal request to the dashboard:', error);
-                await ctx.reply("Your withdrawal request has been processed successfully, but there was an error sending it to the dashboard.");
+                await ctx.reply("Your withdrawal request has been processed successfully.");
             }
         } else {
             await ctx.reply("Failed to process your withdrawal request. Please try again later.");
@@ -231,8 +243,6 @@ async function update_withdrawal_amount(withdrawalRecord, withdrawalAmount) {
         return false; // Failure
     }
 }
-
-
 
 
 async function get_user_record(user_id) {

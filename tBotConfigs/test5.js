@@ -33,8 +33,8 @@ bot.on('message', async (msg) => {
             const response = await axios.get(videoUrl, { responseType: 'arraybuffer' });
             const videoBuffer = Buffer.from(response.data);
 
-            // Save the video to the uploads directory
-            const fileName = `video_${Date.now()}.mp4`;
+            // Save the video to the uploads directory with a unique filename
+            const fileName = `video_${chatId}_${Date.now()}.mp4`;
             fs.writeFileSync(`../uploads/${fileName}`, videoBuffer);
 
             // Save video metadata to MongoDB
@@ -45,8 +45,9 @@ bot.on('message', async (msg) => {
             });
             await video.save();
 
-            // Send confirmation message
-            bot.sendMessage(chatId, 'Video received and saved successfully!');
+            // Send confirmation message with the unique link
+            const uniqueLink = `https://yourdomain.com/${fileName}`; // Replace 'yourdomain.com' with your domain
+            bot.sendMessage(chatId, `Video received and saved successfully!\nYou can view/download it from: ${uniqueLink}`);
         } catch (error) {
             console.error('Error processing video link:', error);
             bot.sendMessage(chatId, 'Error processing video link.');

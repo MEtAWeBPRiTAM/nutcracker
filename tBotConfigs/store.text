@@ -1,0 +1,105 @@
+bot.command("withdraw", async (ctx) => {
+    // Initialize ctx.session if it's undefined
+        ctx.session = {};
+
+    const user_id = ctx.message.from.id;
+    const user_record = await get_user_record(user_id);
+
+    if (!user_record) {
+        await ctx.reply("You don't have a user record. Please contact support for assistance.");
+        return;
+    }
+
+    const withdrawal_record = await withdrawalCollection.findOne({ userId: user_id });
+
+    if (withdrawal_record) {
+        // Withdrawal record found, ask for withdrawal amount
+        await ctx.reply("Enter the withdrawal amount in dollars:");
+        ctx.session.withdrawalRecord = withdrawal_record; // Store the withdrawal record in the session
+    } else {
+        // No withdrawal record found, ask for bank details
+        await ctx.reply("Please provide the name of your bank:");
+        ctx.session.expectingBankName = true;
+    }
+});
+
+// Handle user's response to each question
+bot.on("text", async (ctx) => {
+    const user_id = ctx.message.from.id;
+    const { expectingBankName, expectingAccountNo, expectingIFSC, expectingAccountHolderName, expectingWithdrawalAmount } = ctx.session;
+
+    if (expectingBankName) {
+        // Save the bank name
+        ctx.session.bankName = ctx.message.text;
+
+        // Ask for the account number
+        await ctx.reply("Please provide your account number:");
+        ctx.session.expectingBankName = false;
+        ctx.session.expectingAccountNo = true;
+    } else if (expectingAccountNo) {
+        // Save the account number
+        ctx.session.accountNo = ctx.message.text;
+
+        // Ask for the IFSC code
+        await ctx.reply("Please provide the IFSC code:");
+        ctx.session.expectingAccountNo = false;
+        ctx.session.expectingIFSC = true;
+    } else if (expectingIFSC) {
+        // Save the IFSC code
+        ctx.session.ifsc = ctx.message.text;
+
+        // Ask for the account holder's name
+        await ctx.reply("Please provide the name of the account holder:");
+        ctx.session.expectingIFSC = false;
+        ctx.session.expectingAccountHolderName = true;
+    } else if (expectingAccountHolderName) {
+        // Save the account holder's name
+        ctx.session.accountHolderName = ctx.message.text;
+
+        // All details collected, proceed to save in database
+        const success = await saveBankDetails(user_id, ctx.session.bankName, ctx.session.accountNo, ctx.session.ifsc, ctx.session.accountHolderName);
+
+        if (success) {
+            await ctx.reply("Your bank details have been saved successfully.");
+            // Ask for the withdrawal amount
+            await ctx.reply("Please enter the withdrawal amount in dollars:");
+            ctx.session.expectingAccountHolderName = false;
+            ctx.session.expectingWithdrawalAmount = true;
+        } else {
+            await ctx.reply("Failed to save your bank details. Please try again later.");
+            // Reset the session
+            ctx.session = {};
+        }
+    } else if (expectingWithdrawalAmount) {
+        const withdrawalAmount = parseFloat(ctx.message.text);
+        if (isNaN(withdrawalAmount) || withdrawalAmount <= 0) {
+            await ctx.reply("Invalid withdrawal amount. Please enter a valid amount in dollars.");
+            return;
+        }
+
+        // Retrieve user's earnings from the user record
+        const userRecord = await userCollection.findOne({ userId: user_id });
+        const totalEarnings = userRecord.totalEarnings || 0;
+
+        // Check if withdrawal amount exceeds user earnings
+        if (withdrawalAmount > totalEarnings) {
+            await ctx.reply(`Your Total Earnings: ${totalEarnings} $\nWithdrawal amount exceeds your earnings. Please enter a valid withdrawal amount.`);
+            return;
+        }
+
+        // Proceed with processing the withdrawal request
+        const withdrawalSuccess = await processWithdrawalRequest(user_id, withdrawalAmount);
+
+        if (withdrawalSuccess) {
+            await ctx.reply("Your withdrawal request has been processed successfully. It will be processed in 48 hours.");
+            // Update total earnings in userCollection
+            const newTotalEarnings = totalEarnings - withdrawalAmount;
+            await userCollection.updateOne({ userId: user_id }, { $set: { totalEarnings: newTotalEarnings } });
+        } else {
+            await ctx.reply("Failed to process your withdrawal request. Please try again later.");
+        }
+
+        // Reset the session
+        ctx.session = {};
+    }
+});

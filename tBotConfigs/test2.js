@@ -315,20 +315,63 @@ bot.command('disablepicture', async (ctx) => {
 const convertedLinksMap = new Map();
 
 bot.on('message', async (ctx) => {
-    const messageText = ctx.message.text;
+    const messageText = ctx.message.text || '';
+    const photo = ctx.message.photo || [];
+    const caption = ctx.message.caption || ''; // Check for caption when a photo is present
 
+    console.log("Message Text:", messageText);
+    console.log("Photo:");
+
+    // If the message contains a photo
+    if (photo.length > 0) {
+        console.log("Handling message with a photo...");
+        // Handle the photo (if needed)
+        
+        // If there is also message text or caption, handle it
+        if (messageText !== '' || caption !== '') {
+            console.log("Handling message text or caption as well...");
+            // Use caption if available, otherwise fallback to message text
+            const textToHandle = caption !== '' ? caption : messageText;
+            // Call the function to handle video links with the text
+            await handleVideoLinks(ctx, textToHandle);
+        }
+    }
+    // If the message contains only text
+    else if (messageText !== '') {
+        console.log("Handling message with only text...");
+        // Call the function to handle video links with the text
+        await handleVideoLinks(ctx, messageText);
+    }
+    else {
+        console.log("Empty message.");
+    }
+});
+
+
+
+
+
+async function handleVideoLinks(ctx, messageText = '') {
+    console.log('Message Text:', messageText); // Log the message text
+    
     // Regular expression pattern to match the video ID
     const videoIdPattern = /[0-9a-f]{24}/gi;
     const videoIdMatches = messageText.match(videoIdPattern);
 
+    console.log('Video ID Matches:', videoIdMatches); // Log the video ID matches
+    
     if (videoIdMatches && videoIdMatches.length > 0) {
         const videoId = videoIdMatches[0]; // Take the first match
+        console.log('Video ID:', videoId); // Log the extracted video ID
 
         // Check the user's settings in the linkConvertor collection
         const userSettings = await collection.findOne({ chatId: ctx.from.id });
-
+        console.log('User Settings:', userSettings); // Log the user settings
+        
         let modifiedMessage = messageText; 
         const videoLinks = `https://nutcracker.live/play/${videoId}`;
+
+        console.log('Video Links:', videoLinks); // Log the constructed video links
 
         if (userSettings && userSettings.enableText === 'yes') {
             // If enableText is "yes", modify the message based on user's settings
@@ -341,6 +384,8 @@ bot.on('message', async (ctx) => {
             if (userSettings.channelLink) userMessage += `${userSettings.channelLink}\n\n`;
             if (userSettings.footerText) userMessage += `${userSettings.footerText}`;
 
+            console.log('User Message:', userMessage); // Log the constructed user message
+
             // Update the message if any part is present in user's settings
             if (userSettings.headerText || userSettings.channelLink || userSettings.footerText) {
                 modifiedMessage = userMessage;
@@ -350,12 +395,18 @@ bot.on('message', async (ctx) => {
             modifiedMessage = videoLinks; // Only keep the video link
         }
 
+        console.log('Modified Message:', modifiedMessage); // Log the modified message
+
         // Search for the video ID in the videosRecord collection
         const videoRecord = await videosRecordCollection.findOne({ fileUniqueId: videoId });
+
+        console.log('Video Record:', videoRecord); // Log the video record
 
         if (videoRecord) {
             // Generate a new video ID for the user
             const newVideoId = generateRandomHex(24);
+
+            console.log('New Video ID:', newVideoId); // Log the new video ID
 
             // Create a new video record with updated fields
             const newVideoRecord = {
@@ -368,14 +419,18 @@ bot.on('message', async (ctx) => {
             // Remove the _id field to prevent duplicate key error
             delete newVideoRecord._id;
 
+            console.log('New Video Record:', newVideoRecord); // Log the new video record
+
             // Store the new video record in the videosRecord collection
             await videosRecordCollection.insertOne(newVideoRecord);
 
             // Generate a new video link using the updated video ID
             const modifiedLink = modifiedMessage.replace(videoId, newVideoId);
 
-            // Reply to the user with the modified message
-            ctx.reply(modifiedLink);
+            console.log('Modified Link:', modifiedLink); // Log the modified link
+
+            // Reply to the user with the modified message and keep the photo if present
+            ctx.reply(modifiedLink, { caption: ctx.message.caption, photo: ctx.message.photo });
 
             // Update the convertedLinksMap for this user
             if (!convertedLinksMap.has(ctx.from.id)) {
@@ -386,7 +441,12 @@ bot.on('message', async (ctx) => {
             ctx.reply('Video not found.');
         }
     }
-});
+}
+
+
+
+
+
 
 
 // Helper function to generate a random hexadecimal string

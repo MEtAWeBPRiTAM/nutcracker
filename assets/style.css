@@ -153,6 +153,7 @@ a {
     margin-right: 15px;
     font-weight: 500;
     border: none;
+    cursor: pointer;
 }
 
 .section1 .buttonsec {
@@ -162,6 +163,7 @@ a {
     background-color: black;
     border-radius: 8px;
     border: none;
+    cursor: pointer;
     /* border: 1px solid white; */
 }
 

@@ -1,10 +1,12 @@
 require('dotenv').config();
 const { Telegraf, Scenes, session } = require('telegraf');
 const { MongoClient } = require('mongodb');
-const axios = require('axios');
 const fs = require('fs');
+const path = require('path');
+const axios = require('axios');
 const { promisify } = require('util');
 const fetch = require('node-fetch');
+
 
 const app = new Telegraf(process.env.bot1Token);
 const stage = new Scenes.Stage();
@@ -17,6 +19,7 @@ app.use(stage.middleware());
 // Initialize MongoDB
 const MONGO_URI = process.env.mongoDB_uri;
 const client = new MongoClient(MONGO_URI);
+
 
 async function main() {
     try {
@@ -179,7 +182,9 @@ async function main() {
 
             try {
                 const unique_link = await processVideoLink(videoLink, user_id, sender_username);
-                ctx.reply(`Your video has been uploaded successfully...\n\n😊😊Now you can start using the link:\n\n${unique_link}`);
+                if(unique_link){
+                    ctx.reply(`Your video has been uploaded successfully...\n\n😊😊Now you can start using the link:\n\n${unique_link}`);
+                }
             } catch (err) {
                 console.error('Error uploading video from link:', err);
                 ctx.reply('An error occurred while processing the video link. Please try again later.');
@@ -190,60 +195,75 @@ async function main() {
         });
 
         // Register the scene with Telegraf's stage
-        const stage = new Scenes.Stage([uploadFromLinkScene]);
+        // const stage = new Scenes.Stage([uploadFromLinkScene]);
         app.use(stage.middleware());
         stage.register(uploadFromLinkScene);
 
-        async function processVideoLink(video_link, user_id, sender_username) {
-            const video_path = await downloadAndStoreVideo(video_link);
-            const videoId = generateRandomHex(24);
-            const originalFileName = getOriginalFileName(video_link);
+        async function downloadAndStoreVideo(videoUrl, folder = "../uploads/") {
+            const filename = path.basename(new URL(videoUrl).pathname);
+            const filepath = path.join(folder, filename);
         
-            const video_info = {
-                "videoName": originalFileName,
-                "originalFileName": originalFileName,
-                "fileLocalPath": `/public/uploads/${videoId}`,
-                "file_size": fs.statSync(video_path).size,
-                "duration": 0, // Update with actual duration if available
-                "mime_type": "video/mp4", // Update with actual MIME type if available
-                "fileUniqueId": videoId,
-                "relatedUser": user_id,
-                "userName": sender_username || "",
-            };
-            
-            await db.collection("videosRecord").insertOne(video_info);
+            const writer = fs.createWriteStream(filepath);
         
-            const videoUrl = `http://nutcracker.live/video/${videoId}`;
-            return videoUrl;
-        }
-        
-        function getOriginalFileName(video_link) {
-            const urlParts = video_link.split('/');
-            const filename = urlParts[urlParts.length - 1];
-            return filename;
-        }
-
-        // Function to download and store video from link
-        async function downloadAndStoreVideo(video_url) {
-            const filename = generateRandomFilename() + ".mp4";
-            const filepath = `../public/uploads/${filename}`;
-
-            const response = await fetch(video_url);
-            const fileStream = fs.createWriteStream(filepath);
-
-            await new Promise((resolve, reject) => {
-                response.body.pipe(fileStream);
-                response.body.on("error", (err) => {
-                    reject(err);
+            try {
+                const response = await axios({
+                    url: videoUrl,
+                    method: 'GET',
+                    responseType: 'stream'
                 });
-                fileStream.on("finish", function () {
-                    resolve();
+        
+                response.data.pipe(writer);
+        
+                await new Promise((resolve, reject) => {
+                    writer.on('finish', resolve);
+                    writer.on('error', reject);
                 });
-            });
-
+        
+                console.log("Video downloaded successfully:", filepath);
+        
+                // Check the content type of the downloaded file
+                const contentType = response.headers['content-type'];
+                console.log("Content Type:", contentType);
+        
+                // Check if the content type indicates a video file
+                if (!contentType.startsWith('video')) {
+                    throw new Error("Downloaded file is not a video.");
+                }
+            } catch (error) {
+                console.error("Error downloading video:", error);
+                // If an error occurs during the download process, delete the incomplete file
+                fs.unlinkSync(filepath);
+                throw error;
+            }
+        
             return filepath;
         }
-
+        
+        
+        async function processVideoLink(videoLink, user_id, sender_username) {
+            try {
+                const videoPath = await downloadAndStoreVideo(videoLink);
+                const videoId = generateRandomHex(24);
+                
+                const video_info = {
+                    filename: path.basename(videoPath),
+                    fileLocalPath: `../uploads/${videoId}`,
+                    file_size: fs.statSync(videoPath).size,
+                    duration: 0,  // Update with actual duration if available
+                    mime_type: 'video/mp4',  // Update with actual MIME type if available
+                    uniqueLink: videoId,
+                    relatedUser: user_id,
+                    userName: sender_username || '',
+                };
+            
+                await videoCollection.insertOne(video_info);
+                const videoUrl = `http://nutcracker.live/video/${videoId}`;
+                return videoUrl;
+            } catch (error) {
+                console.error("Error processing video link:", error);
+                throw error;
+            }
+        }
 
 
         // Start the bot
@@ -263,5 +283,4 @@ function generateRandomHex(length) {
     }
     return random_hex;
 }
-
 
