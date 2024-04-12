@@ -10,7 +10,6 @@ const fetch = require('node-fetch');
 
 const app = new Telegraf(process.env.bot1Token);
 const stage = new Scenes.Stage();
-const uploadFromLinkScene = new Scenes.BaseScene('uploadFromLinkScene');
 
 // Register the stage with the bot
 app.use(session());
@@ -69,40 +68,70 @@ async function main() {
                 });
                 response.data.pipe(writer);
 
-                await ctx.reply(`Your video has been uploaded successfully...\n\n😊😊Now you can start using the link:\n\nhttp://nutcracker.live/video/${videoId}`);
+                await ctx.reply(`Your video has been uploaded successfully...\n\n😊😊Now you can start using the link:\n\nhttp://nutcracker.live/play/${videoId}`);
             } catch (error) {
                 console.error(error);
                 await ctx.reply('An error occurred while processing your request. Please try again later.');
             }
         });
+
+
+        const titlerenameScene = new Scenes.BaseScene('titlerenameScene');
+
+        titlerenameScene.enter((ctx) => {
+            ctx.reply('Please enter the video ID:');
+        });
+
+        titlerenameScene.on('text', async (ctx) => {
+            const messageText = ctx.message.text.trim();
+        
+            // Check if a video ID is provided
+            if (!ctx.session.videoId) {
+                const videoId = messageText;
+                console.log(videoId);
+                const videoRecord = await videoCollection.findOne({ uniqueLink: videoId });
+        
+                if (!videoRecord) {
+                    ctx.reply('No video found with the provided video ID.');
+                    return ctx.scene.leave();
+                }
+        
+                ctx.session.videoId = videoId;
+                ctx.reply('Please enter the new title:');
+            } else {
+                // Assuming the text input is the new title
+                const newTitle = messageText;
+        
+                try {
+                    const updatedRecord = await videoCollection.findOneAndUpdate(
+                        { uniqueLink: ctx.session.videoId },
+                        { $set: { filename: newTitle } },
+                        { returnOriginal: false } // Ensure to return the updated document
+                    );
+        
+                    if (!updatedRecord.value) {
+                        // The record was not found or not updated
+                        ctx.reply('No video found with the provided video ID or the title was not updated.');
+                    } else {
+                        // The record was successfully updated
+                        ctx.reply(`The title of the video with ID '${ctx.session.videoId}' has been updated to '${newTitle}'.`);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    ctx.reply('An error occurred while processing your request. Please try again later.');
+                }
+        
+                return ctx.scene.leave();
+            }
+        });
+        
 
         app.command('titlerename', async (ctx) => {
-            const args = ctx.message.text.split(' ');
-            if (args.length < 2) {
-                await ctx.reply('Please provide the video ID along with the new title.');
-                return;
-            }
-
-            const videoId = args[1];
-            const newTitle = args.slice(2).join(' ');
-
-            try {
-                const video_info = await videoCollection.findOneAndUpdate(
-                    { fileUniqueId: videoId },
-                    { $set: { videoName: newTitle } }
-                );
-
-                if (!video_info.value) {
-                    await ctx.reply('No video found with the provided video ID.');
-                    return;
-                }
-
-                await ctx.reply(`The title of the video with ID '${videoId}' has been updated to '${newTitle}'.`);
-            } catch (error) {
-                console.error(error);
-                await ctx.reply('An error occurred while processing your request. Please try again later.');
-            }
+            ctx.scene.enter('titlerenameScene');
         });
+        stage.register(titlerenameScene);
+
+
 
         app.command('start', async (ctx) => {
             const user_id = ctx.message.from.id;
@@ -124,8 +153,11 @@ async function main() {
             }
         });
 
-        app.command('getmyuserid', async (ctx) => {
+        app.command('getmyid', async (ctx) => {
             await ctx.reply(`Here is your user id: ${ctx.message.from.id}`);
+        });
+        app.command('uploadfromdevice', async (ctx) => {
+            await ctx.reply(`Share video to get started`);
         });
 
         // My Account Info command handler
@@ -136,10 +168,15 @@ async function main() {
                 const userInfo = await userCollection.findOne({ userId: id });
 
                 if (userInfo) {
+                    const { userId, userName, totalViews, bankDetails, totalEarnings } = userInfo;
+
                     let infoMessage = "Your account information:\n\n";
-                    for (const [key, value] of Object.entries(userInfo)) {
-                        infoMessage += `${key}: ${value}\n`;
-                    }
+                    infoMessage += `User ID: ${userId}\n`;
+                    infoMessage += `User Name: ${userName}\n`;
+                    infoMessage += `Total Views: ${totalViews}\n`;
+                    infoMessage += `Bank Details: ${bankDetails}\n`;
+                    infoMessage += `Total Earnings: ${totalEarnings}\n`;
+
                     ctx.reply(infoMessage);
                 } else {
                     ctx.reply("No account information found.");
@@ -149,6 +186,7 @@ async function main() {
                 ctx.reply("An error occurred while fetching your account information.");
             }
         });
+
 
         app.command('availablebots', async (ctx) => {
             const bot_list = [
@@ -162,106 +200,130 @@ async function main() {
             await ctx.reply("Available Bots:", { reply_markup: { inline_keyboard: keyboard } });
         });
 
-        // Define the scene for uploading video from link
+        app.command('deletelink', async (ctx) => {
+            const chatId = ctx.chat.id;
 
-        // Scene enters when /uploadfromlink command is triggered
-        app.command('uploadfromlink', (ctx) => {
-            ctx.scene.enter('uploadFromLinkScene');
+            // Flag to control whether the middleware should process messages
+            let shouldProcessMessage = true;
+
+            // Prompt the user to enter the video ID
+            await ctx.reply('Please enter the video ID you want to delete:');
+
+            // Set up a middleware to capture the next message from the user
+            app.on('text', async (ctx) => {
+                // Check if the middleware should process the message
+                if (!shouldProcessMessage) return;
+
+                // Extract the video ID from the user's response
+                const videoId = ctx.message.text;
+
+                // Attempt to delete the video link
+                await deleteVideoLink(ctx, videoId);
+
+                // Prevent further processing of messages
+                shouldProcessMessage = false;
+            });
         });
 
-        // Scene enters
-        uploadFromLinkScene.enter((ctx) => {
-            ctx.reply('Please provide the video link.');
-        });
-
-        // Scene handles text input
-        uploadFromLinkScene.on('text', async (ctx) => {
-            const videoLink = ctx.message.text;
-            const user_id = ctx.message.from.id;
-            const sender_username = ctx.message.from.username;
-
+        async function deleteVideoLink(ctx, videoId) {
             try {
-                const unique_link = await processVideoLink(videoLink, user_id, sender_username);
-                if(unique_link){
-                    ctx.reply(`Your video has been uploaded successfully...\n\n😊😊Now you can start using the link:\n\n${unique_link}`);
+                // Find the video record
+                const videoRecord = await videoCollection.findOne({ uniqueLink: videoId });
+                console.log(videoRecord)
+
+                // Check if the video record exists
+                if (!videoRecord) {
+                    await ctx.reply("No video found with the provided ID.");
+                    return; // Exit the function early
                 }
-            } catch (err) {
-                console.error('Error uploading video from link:', err);
-                ctx.reply('An error occurred while processing the video link. Please try again later.');
-            }
 
-            // Leave the scene to stop further processing of text messages
-            ctx.scene.leave();
-        });
+                // Delete the video record
+                const deletionResult = await videoCollection.deleteOne({ uniqueLink: videoId });
+                console.log(deletionResult)
 
-        // Register the scene with Telegraf's stage
-        // const stage = new Scenes.Stage([uploadFromLinkScene]);
-        app.use(stage.middleware());
-        stage.register(uploadFromLinkScene);
-
-        async function downloadAndStoreVideo(videoUrl, folder = "../uploads/") {
-            const filename = path.basename(new URL(videoUrl).pathname);
-            const filepath = path.join(folder, filename);
-        
-            const writer = fs.createWriteStream(filepath);
-        
-            try {
-                const response = await axios({
-                    url: videoUrl,
-                    method: 'GET',
-                    responseType: 'stream'
-                });
-        
-                response.data.pipe(writer);
-        
-                await new Promise((resolve, reject) => {
-                    writer.on('finish', resolve);
-                    writer.on('error', reject);
-                });
-        
-                console.log("Video downloaded successfully:", filepath);
-        
-                // Check the content type of the downloaded file
-                const contentType = response.headers['content-type'];
-                console.log("Content Type:", contentType);
-        
-                // Check if the content type indicates a video file
-                if (!contentType.startsWith('video')) {
-                    throw new Error("Downloaded file is not a video.");
+                // Check if the video record was deleted
+                if (deletionResult.deletedCount === 1) {
+                    await ctx.reply("Video link deleted successfully.");
+                } else {
+                    await ctx.reply("An error occurred while deleting the video link. Please try again later.");
                 }
             } catch (error) {
-                console.error("Error downloading video:", error);
-                // If an error occurs during the download process, delete the incomplete file
-                fs.unlinkSync(filepath);
-                throw error;
+                console.error("Error deleting video link:", error);
+                await ctx.reply("An error occurred while deleting the video link. Please try again later.");
             }
-        
-            return filepath;
         }
-        
-        
-        async function processVideoLink(videoLink, user_id, sender_username) {
+        const tmpRecordCollection = db.collection('tmpRecord');
+        app.command('convertsitelink', (ctx) => {
+            // Prompt the user to provide the video link
+            ctx.reply('Please provide the video link:');
+
+            // Set session flag to indicate that user is converting a site link
+            ctx.session.convertingSiteLink = true;
+        });
+
+        // Middleware to handle the user's response
+        app.on('text', async (ctx) => {
+            // Check if the user is in the process of converting a site link
+            if (ctx.session && ctx.session.convertingSiteLink) {
+                const videoLink = ctx.message.text;
+
+                // Extract video ID from the provided link (assuming it's the last segment of the URL path)
+                const videoId = videoLink.split('/').pop();
+
+                // Continue with the conversion process
+                await processSiteLink(ctx, videoId);
+
+                // Reset the session flag
+                delete ctx.session.convertingSiteLink;
+            }
+        });
+
+        // Function to process the provided site link
+        async function processSiteLink(ctx, videoId) {
             try {
-                const videoPath = await downloadAndStoreVideo(videoLink);
-                const videoId = generateRandomHex(24);
-                
-                const video_info = {
-                    filename: path.basename(videoPath),
-                    fileLocalPath: `../uploads/${videoId}`,
-                    file_size: fs.statSync(videoPath).size,
-                    duration: 0,  // Update with actual duration if available
-                    mime_type: 'video/mp4',  // Update with actual MIME type if available
-                    uniqueLink: videoId,
-                    relatedUser: user_id,
-                    userName: sender_username || '',
-                };
-            
-                await videoCollection.insertOne(video_info);
-                const videoUrl = `http://nutcracker.live/video/${videoId}`;
-                return videoUrl;
+                // Search for the video ID in the 'tmpRecord' collection
+                const tmpRecord = await tmpRecordCollection.findOne({ uniqueLink: videoId });
+
+                // Check if the video ID was found in the 'tmpRecord' collection
+                if (!tmpRecord) {
+                    await ctx.reply("No video found.");
+                    return;
+                }
+
+                // Move the video file from '/tmpvideos' to '/uploads'
+                const sourceFilePath = `../tmpvideos/${tmpRecord.filename}`; // Update source file path
+                const destFilePath = `../uploads/${tmpRecord.filename}`;
+
+                // Check if the source file exists
+                if (fs.existsSync(sourceFilePath)) {
+                    // Rename the source file to the destination file
+                    await promisify(fs.rename)(sourceFilePath, destFilePath);
+
+                    // Create a new record in the 'videosRecord' collection
+                    const newVideoRecord = {
+                        filename: tmpRecord.filename,
+                        // fileLocalPath: `../uploads/${tmpRecord.filename}`,
+                        // file_size: tmpRecord.file_size,
+                        // duration: tmpRecord.duration,
+                        // mime_type: tmpRecord.mime_type,
+                        uniqueLink: videoId,
+                        // relatedUser: tmpRecord.relatedUser,
+                        // userName: tmpRecord.userName || '',
+                        viewCount: 0,
+                    };
+                    await videoCollection.insertOne(newVideoRecord);
+
+                    // Generate a unique link for the user to play the converted video
+                    const uniqueLink = `https://nutcracker.live/play/${videoId}`;
+
+                    // Inform the user about the successful conversion and provide the unique link
+                    await ctx.reply(`Video converted successfully! You can play it using the following link:\n${uniqueLink}`);
+                } else {
+                    await ctx.reply("The source video file does not exist.");
+                }
             } catch (error) {
-                console.error("Error processing video link:", error);
-                throw error;
+                console.error("Error processing site link:", error);
+                await ctx.reply("An error occurred while processing the site link. Please try again later.");
             }
         }
 
