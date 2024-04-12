@@ -30,7 +30,7 @@ body {
     background: url(/assets/images/bg.jpg) no-repeat;
     background-size: cover;
     width: 100%;
-    height: auto;
+    /* height: auto; */
 }
 
 a {
