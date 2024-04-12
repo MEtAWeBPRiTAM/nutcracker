@@ -174,37 +174,10 @@ async def available_bots(bot, message):
 # Command handler for /deletelink
 @app.on_message(filters.command("deletelink"))
 async def delete_link_command_handler(bot, message):
-    try:
-        # Flag to control whether the middleware should process messages
-        app.should_process_message = True
+    await message.reply("Please enter the video ID you want to delete:")
+    user_id = message.chat.id
+    await save_session_data(user_id, {"delete_link": True})
 
-        # Prompt the user to enter the video ID
-        await bot.send_message(message.chat.id, 'Please enter the video ID you want to delete:')
-        
-    except Exception as e:
-        print("Error in delete_link_command_handler:", e)
-        await bot.send_message(message.chat.id, "An error occurred. Please try again later.")
-
-# Message handler to capture the next message from the user
-@app.on_message(filters.text & filters.private & ~filters.bot)
-async def text_middleware(bot, message):
-    try:
-        # Check if the middleware should process the message
-        if not hasattr(app, 'should_process_message') or not app.should_process_message:
-            return
-
-        # Extract the video ID from the user's response
-        video_id = message.text
-
-        # Attempt to delete the video link
-        await delete_video_link(bot, message, video_id)
-
-        # Prevent further processing of messages
-        app.should_process_message = False
-
-    except Exception as e:
-        print("Error in text_middleware:", e)
-        await bot.send_message(message.chat.id, "An error occurred. Please try again later.")
 
 async def delete_video_link(bot, message, video_id):
     try:
@@ -246,6 +219,12 @@ async def text_middleware(bot, message):
         video_id = video_link.split('/')[-1]
         await process_site_link(bot, message, video_id)
         await save_session_data(user_id, {})
+
+    elif session_data.get("delete_link", False):
+        await delete_video_link(bot, message, video_id)
+        app.should_process_message = False
+    
+    
     else:
         user_id = message.from_user.id
         sender_username = message.from_user.username
